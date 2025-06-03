@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <script type="module" src="script.js" crossorigin="anonymous"></script>
+    <title>Ludo Game</title>
+    
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="current-player">Current Player: <span id="current-player-color">Red</span></div>
+        <div class="ludo-board" id="ludo-board">
+            <div class="home-area home-red">
+                <div class="home-circle" id="home-red-1"></div>
+                <div class="home-circle" id="home-red-2"></div>
+                <div class="home-circle" id="home-red-3"></div>
+                <div class="home-circle" id="home-red-4"></div>
+            </div>
+            <div class="home-area home-green">
+                <div class="home-circle" id="home-green-1"></div>
+                <div class="home-circle" id="home-green-2"></div>
+                <div class="home-circle" id="home-green-3"></div>
+                <div class="home-circle" id="home-green-4"></div>
+            </div>
+            <div class="home-area home-yellow">
+                <div class="home-circle" id="home-yellow-1"></div>
+                <div class="home-circle" id="home-yellow-2"></div>
+                <div class="home-circle" id="home-yellow-3"></div>
+                <div class="home-circle" id="home-yellow-4"></div>
+            </div>
+            <div class="home-area home-blue">
+                <div class="home-circle" id="home-blue-1"></div>
+                <div class="home-circle" id="home-blue-2"></div>
+                <div class="home-circle" id="home-blue-3"></div>
+                <div class="home-circle" id="home-blue-4"></div>
+            </div>
+
+            <div class="center-triangle">
+                <div class="triangle red"></div>
+                <div class="triangle green"></div>
+                <div class="triangle blue"></div>
+                <div class="triangle yellow"></div>
+                <div class="redHome"></div>
+                <div class="greenHome"></div>
+                <div class="blueHome"></div>
+                <div class="yellowHome"></div>
+
+                <!-- Uncomment to drop a star right in the dead center: -->
+                <!-- <div class="center-icon">★</div> -->
+            </div>
+        </div>
+
+        <div class="dice-area">
+            <div class="dice" id="dice">🎲</div>
+            <p>Roll the dice!</p>
+        </div>
+    </div>
+
+    <div class="message-box" id="message-box">
+        <p id="message-text"></p>
+        <button id="message-button">OK</button>
+    </div>
+
+    
+</body>
+</html>

@@ -1,0 +1,476 @@
+
+/* ============================
+Variables & Root Settings
+============================ */
+:root {
+    --bg-light: #f0f2f5;
+    --board-bg: #eee;
+    --border-main: #333;
+    --cell-border: #ccc;
+    --home-bg: #fff;
+    --home-border: #555;
+    --color-red: #cc0000;
+    --color-red-light: #ffaaaa;
+    --color-green: #00cc00;
+    --color-green-light: #aaffaa;
+    --color-yellow: #cccc00;
+    --color-yellow-light: #ffffaa;
+    --color-blue: #0000cc;
+    --color-blue-light: #aaaaff;
+    --piece-shadow: rgba(0, 0, 0, 0.2);
+    --transition-speed: 0.2s;
+}
+
+/* General body styling */
+body {
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--bg-light);
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: auto; /* Allow scrolling if content overflows */
+}
+
+/* ========================
+Game Container
+======================== */
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 100%;
+    max-width: 700px; /* Max width for large screens */
+    box-sizing: border-box;
+}
+
+/* ========================
+Ludo Board Container
+======================== */
+.ludo-board {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr);
+    grid-template-rows: repeat(15, 1fr);
+    width: 100%;
+    /* Maintain square shape using aspect-ratio */
+    aspect-ratio: 1 / 1;
+    max-width: 600px; /* Cap size on large screens */
+    border: 2px solid var(--border-main);
+    background-color: var(--board-bg);
+    border-radius: 10px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+    overflow: hidden; /* Ensure pieces stay within bounds */
+    position: relative;
+}
+
+/* ========================
+Cell Styling
+======================== */
+.cell {
+    border: 1px solid var(--cell-border);
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8em;
+    position: relative;
+    background-color: #fff;
+    transition: background-color var(--transition-speed);
+}
+
+/* Hover effect on all cells for interactivity */
+.cell:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* ========================
+Home Areas (4 Corners)
+======================== */
+.home-area {
+    background-color: var(--home-bg);
+    border: 2px solid var(--home-border);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    place-items: center;
+    border-radius: 10px;
+    position: relative;
+    z-index: 1;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+}
+
+/* Specific Home Positions */
+.home-red {
+    grid-column: 1 / span 6;
+    grid-row: 1 / span 6;
+    background-color: #ffcccc;
+    border-color: var(--color-red);
+}
+.home-green {
+    grid-column: 10 / span 6;
+    grid-row: 1 / span 6;
+    background-color: #ccffcc;
+    border-color: var(--color-green);
+}
+.home-yellow {
+    grid-column: 1 / span 6;
+    grid-row: 10 / span 6;
+    background-color: #ffffcc;
+    border-color: var(--color-yellow);
+}
+.home-blue {
+    grid-column: 10 / span 6;
+    grid-row: 10 / span 6;
+    background-color: #cceeff;
+    border-color: var(--color-blue);
+}
+
+/* Home Circles */
+.home-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px dashed #888;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--home-bg);
+    transition: border-color var(--transition-speed), transform var(--transition-speed);
+}
+.home-circle:hover {
+    transform: scale(1.1);
+}
+.home-red .home-circle { border-color: var(--color-red); }
+.home-green .home-circle { border-color: var(--color-green); }
+.home-yellow .home-circle { border-color: var(--color-yellow); }
+.home-blue .home-circle { border-color: var(--color-blue); }
+
+/* ========================
+Center Diamond (Triangles)
+======================== */
+.center-triangle {
+    grid-column: 7 / span 3;
+    grid-row:    7 / span 3;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows:    repeat(3, 1fr);
+    /* Stay a perfect square (scales with parent) */
+    aspect-ratio: 1 / 1;
+    background-color: #fff;
+    position: relative;
+}
+
+.triangle {
+    grid-area: 1 / 1 / 4 / 4; /* span rows 1–3 and cols 1–3 */
+    width:  100%;
+    height: 100%;
+    position: absolute;       /* stack them */
+    top:  0;
+    left: 0;
+}
+
+.triangle.red {
+    background-color: #e74c3c;
+    clip-path: polygon(
+    0%   0%,    /* top-left */
+    50%  50%,   /* center */
+    0%   100%   /* bottom-left */
+    );
+}
+
+.redHome, .greenHome, .blueHome, .yellowHome{
+    width:  100%;
+    height: 100%;
+    position: absolute;
+}
+
+.redHome{
+    grid-area: 2 / 1 / span 1 / span 1; 
+}
+.greenHome{
+    grid-area: 1 / 2 / span 1 / span 1; 
+}
+.blueHome{
+    grid-area: 2 / 3 / span 1 / span 1; 
+}
+.yellowHome{
+    grid-area: 3 / 2 / span 1 / span 1; 
+}
+
+/* Top half = GREEN */
+.triangle.green {
+    background-color: #2ecc71;
+    clip-path: polygon(
+    0%   0%,    /* top-left */
+    100% 0%,    /* top-right */
+    50%  50%    /* center */
+    );
+}
+
+/* Right half = BLUE */
+.triangle.blue {
+    background-color: #3498db;
+    clip-path: polygon(
+    100% 0%,    /* top-right */
+    50%  50%,   /* center */
+    100% 100%   /* bottom-right */
+    );
+}
+
+/* Bottom half = YELLOW */
+.triangle.yellow {
+    background-color: #f1c40f;
+    clip-path: polygon(
+    0%   100%,  /* bottom-left */
+    50%  50%,   /* center */
+    100% 100%   /* bottom-right */
+    );
+}
+
+/* -------------------------------------------------------
+    (D) (Optional) a ★ or ● right in grid-cell (2,2) of 3×3
+------------------------------------------------------- */
+.center-icon {
+    grid-area:    2 / 2;      /* row 2, col 2 in a 3×3 */
+    align-self:   center;
+    justify-self: center;
+    font-size:    1.5rem;
+    color:        #333;
+    pointer-events: none;
+    z-index:      10;
+}
+
+/* ========================
+Path Cell Styles
+======================== */
+/* Default path cells are white; you can add classes where needed in HTML */
+.path-cell {
+    background-color: #fff;
+}
+/* Colored path segments */
+.red-path { background-color: var(--color-red-light); border-color: var(--color-red); }
+.green-path { background-color: var(--color-green-light); border-color: var(--color-green); }
+.yellow-path { background-color: var(--color-yellow-light); border-color: var(--color-yellow); }
+.blue-path { background-color: var(--color-blue-light); border-color: var(--color-blue); }
+
+/* Start & Safe Cells */
+.start-cell::after {
+    content: '⭐';
+    position: absolute;
+    font-size: 1.5em;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+}
+.safe-cell::after {
+    content: '⭐';
+    /* content: '🛡️'; */
+    position: absolute;
+    font-size: 1.5em;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* ========================
+Game Piece Styling
+======================== */
+.piece {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 2px solid #333;
+    position: absolute;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2em;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 8px var(--piece-shadow);
+    transition: transform var(--transition-speed), background-color var(--transition-speed), box-shadow var(--transition-speed);
+    z-index: 2;
+}
+.piece.red   { background-color: var(--color-red);   border-color: #880000; }
+.piece.green { background-color: var(--color-green); border-color: #008800; }
+.piece.yellow{ background-color: var(--color-yellow);border-color: #888800; }
+.piece.blue  { background-color: var(--color-blue);  border-color: #000088; }
+
+.piece:hover {
+    transform: scale(1.2);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+.piece.selected {
+    border-width: 3px;
+    box-shadow: 0 0 7px 5px rgb(255 255 255 / 91%), 14px 19px 18px rgb(0 0 0 / 65%)
+}
+
+/* ========================
+Dice & Controls Area
+======================== */
+.dice-area {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+.dice {
+    width: 80px;
+    height: 80px;
+    background-color: #444;
+    border-radius: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3em;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 8px 15px var(--piece-shadow);
+    transition: transform var(--transition-speed), background-color var(--transition-speed);
+}
+.dice:hover {
+    transform: translateY(-5px);
+    background-color: #555;
+}
+.dice:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* ========================
+Current Player Display
+======================== */
+.current-player {
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #333;
+}
+.current-player span {
+    padding: 5px 15px;
+    border-radius: 10px;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background-color var(--transition-speed);
+}
+.current-player .red-turn    { background-color: var(--color-red); }
+.current-player .green-turn  { background-color: var(--color-green); }
+.current-player .yellow-turn { background-color: var(--color-yellow); }
+.current-player .blue-turn   { background-color: var(--color-blue); }
+
+/* ========================
+Message Box (Pop-up)
+======================== */
+.message-box {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px 30px;
+    border-radius: 15px;
+    z-index: 1000;
+    text-align: center;
+    font-size: 1.5em;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    display: none; /* Hidden by default */
+    opacity: 0;
+    transition: opacity var(--transition-speed);
+}
+.message-box.show {
+    display: block;
+    opacity: 1;
+}
+.message-box button {
+    margin-top: 20px;
+    padding: 10px 25px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color var(--transition-speed);
+}
+.message-box button:hover {
+    background-color: #45a049;
+}
+
+/* ========================
+Responsive Adjustments
+======================== */
+@media (max-width: 768px) {
+    .ludo-board {
+        max-width: 500px;
+    }
+    .dice {
+        width: 60px;
+        height: 60px;
+        font-size: 2.5em;
+    }
+    .current-player {
+        font-size: 1.4em;
+    }
+    .piece {
+        width: 30px;
+        height: 30px;
+        font-size: 1em;
+    }
+    .home-circle {
+        width: 30px;
+        height: 30px;
+    }
+    .center-triangle::before,
+    .center-triangle::after,
+    .center-triangle-inner-top,
+    .center-triangle-inner-bottom {
+        border-width: 50px 50px 0 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .ludo-board {
+        max-width: 365px;
+    }
+    .game-container {
+        padding: 0px;
+    }
+    .safe-cell::after, .start-cell::after{
+        font-size: 0.8rem;
+    }
+    body {
+        padding: 10px 5px;
+    }
+    .dice {
+        width: 50px;
+        height: 50px;
+        font-size: 2em;
+    }
+    .current-player {
+        font-size: 1.2em;
+    }
+    .piece {
+        width: 25px;
+        height: 25px;
+        font-size: 0.9em;
+    }
+    .home-circle {
+        width: 25px;
+        height: 25px;
+    }
+    .center-triangle::before,
+    .center-triangle::after,
+    .center-triangle-inner-top,
+    .center-triangle-inner-bottom {
+        border-width: 35px 35px 0 0;
+    }
+}

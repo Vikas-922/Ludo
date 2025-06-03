@@ -5,13 +5,14 @@ const currentPlayerDisplay = document.getElementById('current-player-color');
 const messageBox = document.getElementById('message-box');
 const messageText = document.getElementById('message-text');
 const messageButton = document.getElementById('message-button');
+const diceImg = document.getElementById('diceImg');
 
 // Define player colors and their starting/path/home positions
 const players = {
     'red': {
         color: 'red',
         startCell: 'cell-7-2', // Red's actual start cell (index 0 in path)
-        homePathStart: 'cell-8-2', // Start of red's home path
+        homePathTurn: 'cell-8-1', // Start of red's home path
         pieces: [], // Array to hold piece elements
         homeCircles: ['home-red-1', 'home-red-2', 'home-red-3', 'home-red-4'],
         pathOffset: 0, // Offset for red's path in the common path array
@@ -20,7 +21,7 @@ const players = {
     'green': {
         color: 'green',
         startCell: 'cell-2-9', // Green's actual start cell
-        homePathStart: 'cell-2-8', // Start of green's home path
+        homePathTurn: 'cell-1-8', // Start of green's home path
         pieces: [],
         homeCircles: ['home-green-1', 'home-green-2', 'home-green-3', 'home-green-4'],
         pathOffset: 13, // Offset for green's path
@@ -29,7 +30,7 @@ const players = {
     'yellow': {
         color: 'yellow',
         startCell: 'cell-14-7', // Yellow's actual start cell
-        homePathStart: 'cell-14-8', // Start of yellow's home path
+        homePathTurn: 'cell-15-8', // Start of yellow's home path
         pieces: [],
         homeCircles: ['home-yellow-1', 'home-yellow-2', 'home-yellow-3', 'home-yellow-4'],
         pathOffset: 26, // Offset for yellow's path
@@ -38,7 +39,7 @@ const players = {
     'blue': {
         color: 'blue',
         startCell: 'cell-9-14', // Blue's actual start cell
-        homePathStart: 'cell-8-14', // Start of blue's home path
+        homePathTurn: 'cell-8-15', // Start of blue's home path
         pieces: [],
         homeCircles: ['home-blue-1', 'home-blue-2', 'home-blue-3', 'home-blue-4'],
         pathOffset: 39, // Offset for blue's path
@@ -77,6 +78,37 @@ const homePaths = {
 const safeCells = [
     'cell-9-3', 'cell-7-2', 'cell-3-7','cell-2-9', 'cell-7-13', 'cell-9-14', 'cell-13-9','cell-14-7'
 ];
+
+const fullPaths = {};
+
+function intializeFullpaths() {
+    ['red', 'green', 'yellow', 'blue'].forEach(color => {
+        let fullPath = [];
+
+        let Idx = commonPath.indexOf(players[color].startCell);
+        let pathCell;
+
+        // Append common path from startCell to homePathTurn (with wrap-around)
+        while (true) {
+            pathCell = commonPath[Idx % commonPath.length];
+            fullPath.push(pathCell);
+            Idx++;
+
+            if (pathCell === players[color].homePathTurn) break;
+        }
+
+        // Append home path cells
+        fullPath = fullPath.concat(homePaths[color]);
+
+        // Store in fullPaths
+        fullPaths[color] = fullPath;
+    });
+
+    console.log('Full Paths:', fullPaths);
+}
+
+intializeFullpaths();
+
 
 /**
  * Displays a message box with the given text.
@@ -218,18 +250,22 @@ async function fetchLudoInsight(playerColor, rolledValue) {
 /**
  * Handles the dice roll event.
  */
+let abc = [6,5,2,1]
 async function rollDice() {
     if (selectedPiece) {
         showMessage("Please move your selected piece or deselect it.");
         return;
     }
 
-    diceValue = Math.floor(Math.random() * 6) + 1;
-    dice.textContent = diceValue === 1 ? '⚀' :
-                        diceValue === 2 ? '⚁' :
-                        diceValue === 3 ? '⚂' :
-                        diceValue === 4 ? '⚃' :
-                        diceValue === 5 ? '⚄' : '⚅';
+    diceValue = abc[Math.floor(Math.random() * 3) + 0];
+    // dice.textContent = diceValue === 1 ? '⚀' :
+    //                     diceValue === 2 ? '⚁' :
+    //                     diceValue === 3 ? '⚂' :
+    //                     diceValue === 4 ? '⚃' :
+    //                     diceValue === 5 ? '⚄' : '⚅';
+    diceImg.src = `images/dice_${diceValue}.svg`; // Update dice image
+    diceImg.alt = `Dice showing ${diceValue}`;
+
     dice.style.pointerEvents = 'none'; // Disable dice after rolling
 
     // let initialMessage = `${currentTurn.toUpperCase()} rolled a ${diceValue}!`;
@@ -251,7 +287,7 @@ async function rollDice() {
     console.log('dice-value', diceValue);
     
     // Check pieces on the path
-    const piecesOnPath = currentPlayer.pieces.filter(p => p.dataset.position.startsWith('path'));
+    const piecesOnPath = currentPlayer.pieces.filter(p => p.dataset.position.includes('path'));
     piecesOnPath.forEach(piece => {
         const currentPathIndex = parseInt(piece.dataset.pathIndex);
         // Simplified check: if on common path, it can move. More complex logic is in movePiece.
@@ -275,6 +311,12 @@ async function rollDice() {
         //     dice.style.pointerEvents = 'auto'; // Re-enable dice for next player
         //     setTimeout(nextTurn, 1000);
         // }, 1000); // Give time for insight to be read
+    }else if (playablePieces.length === 1) {
+        //click on the playable piece
+        playablePieces[0].classList.add('selected');
+        selectedPiece = playablePieces[0]; 
+        movePiece(selectedPiece, diceValue); // Move it immediately
+        playablePieces[0].classList.remove('selected');
     } else {
         // Highlight playable pieces
         playablePieces.forEach(piece => piece.classList.add('selected'));
@@ -314,143 +356,90 @@ function handlePieceClick(event) {
  * @param {number} steps - The number of steps to move.
  */
 function movePiece(piece, steps) {
-    const player = players[currentTurn];
-    const currentPosition = piece.dataset.position;
-    let currentPathIndex = parseInt(piece.dataset.pathIndex);
+  const player = players[currentTurn];
+  const color  = player.color;    // e.g. 'red'
+  const pathArray = fullPaths[color];
+  const finishIndex = pathArray.length - 1; 
+  const COMMON_LENGTH = 51;
 
-    // Logic for moving piece from home
-    if (currentPosition === 'home') {
-        if (steps === 6) {
-            // Move piece from home to start cell
-            const startCellId = player.startCell;
-            const startCell = document.getElementById(startCellId);
-            if (startCell) {
-                startCell.appendChild(piece);
-                piece.dataset.position = 'path';
-                // Find the actual index of the startCell in the commonPath
-                const actualStartIndex = commonPath.indexOf(startCellId);
-                piece.dataset.pathIndex = actualStartIndex;
-                // showMessage(`${player.color.toUpperCase()} piece moved out of home!`);
-                checkAndKillOpponent(piece);
-                resetTurn();
-            } else {
-                console.error(`Start cell ${startCellId} not found.`);
-                showMessage("Error: Start cell not found.");
-            }
-        } else {
-            showMessage("You need to roll a 6 to move a piece out of home.");
-            deselectPiece();
-        }
+  // --- If the piece is still at "home"…
+  if (piece.dataset.position === 'home') {
+    if (steps === 6) {
+      // Let it appear at index = 0 of fullPaths[color]:
+      const startCell = document.getElementById(pathArray[0]);
+      if (!startCell) {
+        console.error(`Cannot find start cell ${pathArray[0]}`);
+        showMessage(`Error: start cell not found.`);
+        deselectPiece();
         return;
+      }
+      startCell.appendChild(piece);
+      piece.dataset.position = 'path';
+      piece.dataset.pathIndex = "0";
+      checkAndKillOpponent(piece); // check if it lands on an opponent
+      resetTurn();
+    } else {
+    //   showMessage("You need a 6 to move out of home.");
+      deselectPiece();
     }
+    return;
+  }
 
-    // Logic for moving piece on the path
-    if (currentPosition.startsWith('path') || currentPosition.startsWith('home-path')) {
-        let newPathIndex = currentPathIndex + steps;
-        let targetCellId;
-        let targetPathArray;
-        let movedIntoHomePath = false;
+  // --- Otherwise, it’s already on the “path” or inside the home‐run portion:
+  let currentIndex = parseInt(piece.dataset.pathIndex, 10);
+  if (isNaN(currentIndex)) currentIndex = -1;
 
-        const totalCommonPathLength = commonPath.length; // 52
-        const totalHomePathLength = homePaths[currentTurn].length; // 6
+  let newIndex = currentIndex + steps;
 
-        // Determine the absolute index on the common path for the current piece
-        let absoluteCurrentCommonPathIndex = -1;
-        if (currentPosition === 'path') {
-            absoluteCurrentCommonPathIndex = currentPathIndex;
-        } else {
-            // If already in home path, it's not on the common path for this calculation
-            // This means a piece already in home path cannot go back to common path.
-            // This logic is for moving from common path INTO home path or moving WITHIN home path.
-        }
+  // (1) Overshoot: if newIndex > finishIndex, invalid:
+  if (newIndex > finishIndex) {
+    showMessage("Cannot move: Overshot the finish. Try again.");
+    // deselectPiece();
+    return;
+  }
 
-        // Logic to check if the piece is entering its home path
-        // This is the index in the commonPath array where a player's piece would branch off to their home path.
-        let entryPointCommonPathIndex;
-        switch (currentTurn) {
-            case 'red': entryPointCommonPathIndex = commonPath.indexOf('cell-8-1'); break; // cell-7-1 is the last common cell before red's home path
-            case 'green': entryPointCommonPathIndex = commonPath.indexOf('cell-1-8'); break; // cell-1-7 is the last common cell before green's home path
-            case 'yellow': entryPointCommonPathIndex = commonPath.indexOf('cell-15-8'); break; // cell-14-7 is the last common cell before yellow's home path
-            case 'blue': entryPointCommonPathIndex = commonPath.indexOf('cell-8-15'); break; // cell-7-14 is the last common cell before blue's home path
-        }
-
-        // If the piece is currently on the common path
-        if (currentPosition === 'path') {
-            console.log('currentPathIndex', currentPathIndex);
-            console.log('newPathIndex', newPathIndex);
-            console.log('entryPointCommonPathIndex', entryPointCommonPathIndex);
-            
-            if (newPathIndex >= entryPointCommonPathIndex && currentPathIndex < entryPointCommonPathIndex) {
-                // The piece is crossing into its home path
-                const stepsIntoHomePath = newPathIndex - entryPointCommonPathIndex;
-                if (stepsIntoHomePath < totalHomePathLength) {
-                    targetPathArray = homePaths[currentTurn];
-                    targetCellId = targetPathArray[stepsIntoHomePath];
-                    piece.dataset.position = 'home-path';
-                    piece.dataset.pathIndex = stepsIntoHomePath;
-                    movedIntoHomePath = true;
-                } else {
-                    // Overshot the home path
-                    showMessage("Cannot move: Overshot the home path. Try again.");
-                    deselectPiece();
-                    return;
-                }
-            } else if (newPathIndex < totalCommonPathLength) {
-                // Still on common path
-                targetPathArray = commonPath;
-                targetCellId = commonPath[newPathIndex];
-                piece.dataset.pathIndex = newPathIndex;
-            } else {
-                // Overshot common path without entering home path (should not happen with correct entryPointCommonPathIndex)
-                showMessage("Cannot move: Overshot the path. Try again.");
-                deselectPiece();
-                return;
-            }
-        } else if (currentPosition === 'home-path') {
-            // Already in home path
-            if (newPathIndex < totalHomePathLength) {
-                targetPathArray = homePaths[currentTurn];
-                targetCellId = targetPathArray[newPathIndex];
-                piece.dataset.pathIndex = newPathIndex;
-            } else {
-                // Overshot home path
-                showMessage("Cannot move: Overshot the home path. Try again.");
-                deselectPiece();
-                return;
-            }
-        }
-
-        // Check if piece reached the finish cell
-        if (targetCellId === player.finishCell && piece.dataset.position === 'home-path') {
-            const finishCell = document.getElementById(player.finishCell);
-            if (finishCell) {
-                finishCell.appendChild(piece);
-                piece.dataset.position = 'finished';
-                piece.style.position = 'relative'; // Adjust styling for finished pieces
-                piece.style.left = 'unset';
-                piece.style.top = 'unset';
-                showMessage(`${player.color.toUpperCase()} piece finished!`);
-                checkWinCondition();
-                resetTurn();
-                return; // Piece finished, no need for further checks
-            }
-        }
-
-        // Move the piece to the target cell
-        const targetCell = document.getElementById(targetCellId);
-        if (targetCell) {
-            targetCell.appendChild(piece);
-            // showMessage(`${player.color.toUpperCase()} piece moved ${steps} steps.`);
-            if (!movedIntoHomePath) { // Only check for kills if still on common path
-                checkAndKillOpponent(piece);
-            }
-            resetTurn();
-        } else {
-            console.error(`Target cell ${targetCellId} not found.`);
-            showMessage("Error: Target cell not found.");
-            deselectPiece();
-        }
+  // (2) If newIndex === finishIndex, that piece has finished:
+  if (newIndex === finishIndex) {
+    const finishCell = document.getElementById(pathArray[finishIndex]);
+    if (!finishCell) {
+      console.error(`Cannot find finish cell ${pathArray[finishIndex]}`);
+      showMessage("Error: finish cell not found.");
+      deselectPiece();
+      return;
     }
+    finishCell.appendChild(piece);
+    piece.dataset.position = 'finished';
+    piece.dataset.pathIndex = finishIndex.toString();
+    piece.style.position = 'relative';
+    piece.style.left = 'unset';
+    piece.style.top  = 'unset';
+    showMessage(`${color.toUpperCase()} piece finished!`);
+    checkWinCondition();
+    resetTurn();
+    return;
+  }
+
+  // (3) Normal move: land on pathArray[newIndex]:
+  const targetCellId = pathArray[newIndex];
+  const targetCell   = document.getElementById(targetCellId);
+  if (!targetCell) {
+    console.error(`Cannot find target cell ${targetCellId}`);
+    showMessage("Error: Target cell not found.");
+    deselectPiece();
+    return;
+  }
+
+  // Move the piece DOM‐node:
+  targetCell.appendChild(piece);
+  piece.dataset.position = (newIndex < COMMON_LENGTH ? 'path' : 'home-path');
+  piece.dataset.pathIndex = newIndex.toString();
+
+  // (4) If we landed in the “common” portion (i.e. newIndex < COMMON_LENGTH), try to kill:
+  if (newIndex < COMMON_LENGTH) {
+    checkAndKillOpponent(piece);
+  }
+
+  resetTurn();
 }
 
 
@@ -482,7 +471,7 @@ function checkAndKillOpponent(movedPiece) {
                 homeCircle.appendChild(piece);
                 piece.dataset.position = 'home';
                 piece.dataset.pathIndex = -1;
-                showMessage(`${movedPiecePlayer.toUpperCase()} killed ${piece.dataset.player.toUpperCase()}'s piece!`);
+                // showMessage(`${movedPiecePlayer.toUpperCase()} killed ${piece.dataset.player.toUpperCase()}'s piece!`);
             } else {
                 console.error(`Home circle for killed piece ${pieceId} not found.`);
             }
@@ -549,12 +538,10 @@ function nextTurn() {
 dice.addEventListener('click', rollDice);
 
 // Initial setup on window load
-window.onload = function() {
+window.onload = function() {    
     initializeBoard();
     createPieces();
     nextTurn(); // Set initial player display
     gameStarted = true;
     // showMessage("Welcome to Ludo! Red player starts. Roll the dice!");
-
-    // console.log(document.getElementById("cell-8-6"));
 };

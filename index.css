@@ -417,12 +417,16 @@ Responsive Adjustments
         height: 60px;
         font-size: 2.5em;
     }
+    #diceImg{
+        width: 78%;
+        height: 78%;
+    }
     .current-player {
         font-size: 1.4em;
     }
     .piece {
-        width: 30px;
-        height: 30px;
+        width: 26px;
+        height: 26px;
         font-size: 1em;
     }
     .home-circle {
@@ -439,10 +443,11 @@ Responsive Adjustments
 
 @media (max-width: 480px) {
     .ludo-board {
-        max-width: 365px;
+        max-width: 385px;
+        margin: 10px;
     }
     .game-container {
-        padding: 0px;
+        padding: 15px 0px;
     }
     .safe-cell::after, .start-cell::after{
         font-size: 0.8rem;
@@ -456,12 +461,13 @@ Responsive Adjustments
         font-size: 2em;
     }
     .current-player {
-        font-size: 1.2em;
+        font-size: 0.8em;
+        margin-bottom: 0.6rem;
     }
     .piece {
-        width: 25px;
-        height: 25px;
-        font-size: 0.9em;
+        width: 21px;
+        height: 21px;
+        font-size: 0.8em;
     }
     .home-circle {
         width: 25px;

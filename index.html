@@ -48,17 +48,59 @@
                 <div id="cell-8-9" class="blueHome"></div>
                 <div id="cell-9-8" class="yellowHome"></div>
 
+
+                <div class="dice-area">
+                    <div class="scene">
+                        <div class="dice" id="dice">
+                            <!-- Face 1 -->
+                            <div class="face front">
+                                <div class="pip" style="grid-column: 2; grid-row: 2;"></div>
+                            </div>
+                            <!-- Face 6 -->
+                            <div class="face back">
+                                <div class="pip" style="grid-column: 1; grid-row: 1;"></div>
+                                <div class="pip" style="grid-column: 1; grid-row: 2;"></div>
+                                <div class="pip" style="grid-column: 1; grid-row: 3;"></div>
+                                <div class="pip" style="grid-column: 3; grid-row: 1;"></div>
+                                <div class="pip" style="grid-column: 3; grid-row: 2;"></div>
+                                <div class="pip" style="grid-column: 3; grid-row: 3;"></div>
+                            </div>
+                            <!-- Face 3 -->
+                            <div class="face right">
+                                <div class="pip" style="grid-column: 1; grid-row: 1;"></div>
+                                <div class="pip" style="grid-column: 2; grid-row: 2;"></div>
+                                <div class="pip" style="grid-column: 3; grid-row: 3;"></div>
+                            </div>
+                            <!-- Face 4 -->
+                            <div class="face left">
+                                <div class="pip" style="grid-column: 1; grid-row: 1;"></div>
+                                <div class="pip" style="grid-column: 1; grid-row: 3;"></div>
+                                <div class="pip" style="grid-column: 3; grid-row: 1;"></div>
+                                <div class="pip" style="grid-column: 3; grid-row: 3;"></div>
+                            </div>
+                            <!-- Face 5 -->
+                            <div class="face top">
+                                <div class="pip" style="grid-column: 1; grid-row: 1;"></div>
+                                <div class="pip" style="grid-column: 1; grid-row: 3;"></div>
+                                <div class="pip" style="grid-column: 2; grid-row: 2;"></div>
+                                <div class="pip" style="grid-column: 3; grid-row: 1;"></div>
+                                <div class="pip" style="grid-column: 3; grid-row: 3;"></div>
+                            </div>
+                            <!-- Face 2 -->
+                            <div class="face bottom">
+                                <div class="pip" style="grid-column: 1; grid-row: 1;"></div>
+                                <div class="pip" style="grid-column: 3; grid-row: 3;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Uncomment to drop a star right in the dead center: -->
                 <!-- <div class="center-icon">★</div> -->
             </div>
         </div>
 
-        <div class="dice-area">
-            <div class="dice" id="dice"><img id="diceImg" src="images/dice_1.svg" alt="Dice" /></div>
-            <p>Roll the dice!</p>
-        </div>
-    </div>
-
+        
     <div class="message-box" id="message-box">
         <p id="message-text"></p>
         <button id="message-button">OK</button>

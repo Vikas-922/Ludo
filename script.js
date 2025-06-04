@@ -104,7 +104,7 @@ function intializeFullpaths() {
         fullPaths[color] = fullPath;
     });
 
-    console.log('Full Paths:', fullPaths);
+    // console.log('Full Paths:', fullPaths);
 }
 
 intializeFullpaths();
@@ -247,9 +247,121 @@ async function fetchLudoInsight(playerColor, rolledValue) {
     }
 }
 
+
+function animateDiceRoll(diceElement, finalValue) {
+    return new Promise((resolve) => {
+        const blurFrames = [
+            "images/dice_blur_1.svg",
+            "images/dice_blur_2.svg",
+            "images/dice_blur_3.svg"
+        ];
+
+        const getRandomBlurFrame = () =>
+            blurFrames[Math.floor(Math.random() * blurFrames.length)];
+
+        const getRandomDiceFrame = () => {
+            const tempValue = Math.floor(Math.random() * 6) + 1;
+            return `images/dice_${tempValue}.svg`;
+        };
+
+        let rollCount = 6;
+        const interval = 80;
+
+        let angle = 0;
+
+        const animation = setInterval(() => {
+            diceElement.src = rollCount % 2 === 0 ? getRandomBlurFrame() : getRandomDiceFrame();
+
+            // Diagonal 3D-style rotation
+            angle += 100; // You can increase or randomize this for more dynamic effect
+            diceElement.style.transform = `rotate3d(1, 1, 0, ${angle}deg)`;
+            diceElement.style.transition = "transform 0.08s linear";
+
+            rollCount--;
+
+            if (rollCount === 0) {
+                clearInterval(animation);
+
+                // Final face + reset rotation smoothly
+                setTimeout(() => {
+                    diceElement.src = `images/dice_${finalValue}.svg`;
+                    diceElement.style.transform = "rotate3d(0, 0, 0, 0deg)";
+                    diceElement.style.transition = "transform 0.3s ease";
+                    resolve();
+                }, 50);
+            }
+        }, interval);
+     
+    });
+}
+
+
 /**
  * Handles the dice roll event.
  */
+
+const FACE_ROTATIONS = {
+  1: { x:   0,  y:   0 },  // front
+  2: { x:  90,  y:   0 },  // top
+  3: { x:   0,  y: 270 },  // right
+  4: { x:   0,  y:  90 },  // left
+  5: { x: 270,  y:   0 },  // bottom
+  6: { x:   0,  y: 180 }   // back
+};
+
+let currentX = 0;
+let currentY = 0;
+
+// (Optional) you can keep a getDiceValue() that just double-checks,
+// but if you never accumulate “illegal” combos, it’ll always match FACE_ROTATIONS.
+function getDiceValue(x, y) {
+  const nx = ((x % 360) + 360) % 360;
+  const ny = ((y % 360) + 360) % 360;
+
+  if (nx === 0 && ny === 0)   return 1; // front
+  if (nx === 90 && ny === 0)  return 2; // top
+  if (nx === 0 && ny === 270) return 4; // right
+  if (nx === 0 && ny === 90)  return 3; // left
+  if (nx === 270 && ny === 0) return 5; // bottom
+  if (nx === 0 && ny === 180) return 6; // back
+  return 1; // fallback
+}
+
+async function diceRollAnimation() {
+  const dice = document.getElementById('dice');
+
+  // 1) Pick a random face 1–6:
+  const faceNum = Math.floor(Math.random() * 6) + 1;
+  const { x: baseX, y: baseY } = FACE_ROTATIONS[faceNum];
+
+  // 2) Add 720° or 1080° spins purely for show (no matter what base is):
+  const spinX = 360 * (2 + Math.floor(Math.random() * 2)); // 720 or 1080
+  const spinY = 360 * (2 + Math.floor(Math.random() * 2)); // 720 or 1080
+
+  // 3) Final orientation is spin + the “base” for that face:
+  const finalX = spinX + baseX;
+  const finalY = spinY + baseY;
+
+  // 4) Animate all at once:
+  dice.style.transition = 'transform 1.5s ease-out';
+  dice.style.transform  = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
+
+  // 5) Wait until it finishes (1.5 seconds):
+  document.querySelector('.dice-area').classList.add('rolling');
+  await new Promise(res => setTimeout(res, 1500));
+  document.querySelector('.dice-area').classList.remove('rolling');
+  
+  // 6) Now we know exactly which face is on top:
+  const value = getDiceValue(finalX, finalY);
+
+  // 7) For the next roll, store only the “base” part, not the huge spin:
+  currentX = baseX;
+  currentY = baseY;
+
+  return value;
+}
+
+
 let abc = [6,5,2,1]
 async function rollDice() {
     if (selectedPiece) {
@@ -257,14 +369,8 @@ async function rollDice() {
         return;
     }
 
-    diceValue = abc[Math.floor(Math.random() * 3) + 0];
-    // dice.textContent = diceValue === 1 ? '⚀' :
-    //                     diceValue === 2 ? '⚁' :
-    //                     diceValue === 3 ? '⚂' :
-    //                     diceValue === 4 ? '⚃' :
-    //                     diceValue === 5 ? '⚄' : '⚅';
-    diceImg.src = `images/dice_${diceValue}.svg`; // Update dice image
-    diceImg.alt = `Dice showing ${diceValue}`;
+    // diceValue = abc[Math.floor(Math.random() * 3) + 0];
+    diceValue = await diceRollAnimation();    
 
     dice.style.pointerEvents = 'none'; // Disable dice after rolling
 
@@ -299,18 +405,9 @@ async function rollDice() {
     // console.log('b');
     
     // If no playable pieces, end turn
-    console.log("aaa", playablePieces);
-    // console.log(playablePieces.length);
-    
-    
     if (playablePieces.length === 0) {
         dice.style.pointerEvents = 'auto';
         nextTurn();
-        // setTimeout(() => {
-        //     // showMessage("No valid moves. Next turn!");
-        //     dice.style.pointerEvents = 'auto'; // Re-enable dice for next player
-        //     setTimeout(nextTurn, 1000);
-        // }, 1000); // Give time for insight to be read
     }else if (playablePieces.length === 1) {
         //click on the playable piece
         playablePieces[0].classList.add('selected');

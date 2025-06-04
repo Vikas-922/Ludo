@@ -1,134 +1,270 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Responsive Ludo Center (3×3 Grid Inside)</title>
-  <style>
-    /* -----------------------------------------------
-       (A) Full Board Container Example (15×15)
-    ----------------------------------------------- */
-    .grid-board {
-      display: grid;
-      grid-template-columns: repeat(15, 1fr);
-      grid-template-rows:    repeat(15, 1fr);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Dice Roller</title>
+    <style>
+        :root {
+          --dice-size: 3rem;
+          --pip-size: 20%;
+          --translate-z: 1.5rem;
+          --border-size: 0.1rem;
+          --border-radius: 0.4rem;
+          --padding-size: 0.1rem;
+        }
 
-      /* Make the board a perfect square that scales: */
-      width:  90vmin;
-      height: 90vmin;
-      margin: auto;
-    }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background: #f0f0f0;
+        }
 
-    /* ---------------------------------------------------------
-       (B) The Center‐Home‐Box: sits in the middle 2×2 of 15×15
-       Itself is a 3×3 grid so we can drop something in the dead-
-       center if desired, but our triangles will overlap all 3×3.
-    --------------------------------------------------------- */
-    .center-triangle {
-      /* Place it in rows 7–8, cols 7–8 of the 15×15→middle. */
-      grid-column: 7 / span 2;
-      grid-row:    7 / span 2;
+        .dice-area {
+          margin-top: 30px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 20px;
+        }
 
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows:    repeat(3, 1fr);
+        .scene {
+          width: var(--dice-size);
+          height: var(--dice-size);
+          perspective: 600px;
+        }
 
-      /* Stay a perfect square (scales with parent) */
-      aspect-ratio: 1 / 1;
-      background-color: #fff;
+        .dice {
+          width: 100%;
+          height: 100%;
+          position: relative;
+          transform-style: preserve-3d;
+          transform: rotateX(0deg) rotateY(0deg);
+          transition: transform 1.5s ease-out;
+        }
 
-      position: relative;
-    }
+        .face {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          background: white;
+          border: var(--border-size) solid black;
+          border-radius: var(--border-radius);
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          grid-template-rows: repeat(3, 1fr);
+          padding: var(--padding-size);
+          box-sizing: border-box;
+        }
 
-    /* ----------------------------------------------------
-       (C) Four Overlapping Triangles, each clipped to a half
-       Each DIV uses grid-area: 1/1/4/4 → covers full square.
-       Then clip-path carves out exactly one half.
-    ---------------------------------------------------- */
-    .triangle {
-      grid-area: 1 / 1 / 4 / 4; /* span rows 1–3 and cols 1–3 */
-      width:  100%;
-      height: 100%;
-      position: absolute;       /* stack them */
-      top:  0;
-      left: 0;
-    }
+        .pip {
+          width: var(--pip-size);
+          height: var(--pip-size);
+          background: black;
+          border-radius: 50%;
+          justify-self: center;
+          align-self: center;
+        }
 
-    /* Left half = RED */
-    .triangle.red {
-      background-color: #e74c3c;
-      clip-path: polygon(
-        0%   0%,    /* top-left */
-        50%  50%,   /* center */
-        0%   100%   /* bottom-left */
-      );
-    }
+        .front  { transform: rotateY(   0deg) translateZ(var(--translate-z)); }
+        .back   { transform: rotateY( 180deg) translateZ(var(--translate-z)); }
+        .right  { transform: rotateY( 270deg) translateZ(var(--translate-z)); }
+        .left   { transform: rotateY(  90deg) translateZ(var(--translate-z)); }
+        .top    { transform: rotateX(  90deg) translateZ(var(--translate-z)); }
+        .bottom { transform: rotateX( 270deg) translateZ(var(--translate-z)); }
 
-    .redHome{
-        grid-area: 2 / 1 / span 1 / span 1; /* span rows 1–3 and cols 1–3 */
-      width:  100%;
-      height: 100%;
-      position: absolute;
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
 
-    }
+        button:hover {
+            background: #0056b3;
+        }
 
-    /* Top half = GREEN */
-    .triangle.green {
-      background-color: #2ecc71;
-      clip-path: polygon(
-        0%   0%,    /* top-left */
-        100% 0%,    /* top-right */
-        50%  50%    /* center */
-      );
-    }
+        .result {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px;
+            color: #333;
+        }
 
-    /* Right half = BLUE */
-    .triangle.blue {
-      background-color: #3498db;
-      clip-path: polygon(
-        100% 0%,    /* top-right */
-        50%  50%,   /* center */
-        100% 100%   /* bottom-right */
-      );
-    }
-
-    /* Bottom half = YELLOW */
-    .triangle.yellow {
-      background-color: #f1c40f;
-      clip-path: polygon(
-        0%   100%,  /* bottom-left */
-        50%  50%,   /* center */
-        100% 100%   /* bottom-right */
-      );
-    }
-
-    /* -------------------------------------------------------
-       (D) (Optional) a ★ or ● right in grid-cell (2,2) of 3×3
-    ------------------------------------------------------- */
-    .center-icon {
-      grid-area:    2 / 2;      /* row 2, col 2 in a 3×3 */
-      align-self:   center;
-      justify-self: center;
-      font-size:    1.5rem;
-      color:        #333;
-      pointer-events: none;
-      z-index:      10;
-    }
-  </style>
+        .debug {
+            font-size: 12px;
+            color: #666;
+            margin: 10px;
+        }
+    </style>
 </head>
 <body>
-
-  <div class="grid-board">
-    <div class="center-triangle">
-      <div class="triangle red"></div>
-      <div class="triangle green"></div>
-      <div class="triangle blue"></div>
-      <div class="triangle yellow"></div>
-      <div class="redHome"></div>
-
-      <!-- Uncomment to drop a star right in the dead center: -->
-      <!-- <div class="center-icon">★</div> -->
+    <h1>3D Dice Roller</h1>
+    
+    <div class="dice-area">
+        <div class="scene">
+            <div class="dice" id="dice">
+                <!-- Face 1 -->
+                <div class="face front">
+                    <div class="pip" style="grid-column: 2; grid-row: 2;"></div>
+                </div>
+                <!-- Face 6 -->
+                <div class="face back">
+                    <div class="pip" style="grid-column: 1; grid-row: 1;"></div>
+                    <div class="pip" style="grid-column: 1; grid-row: 2;"></div>
+                    <div class="pip" style="grid-column: 1; grid-row: 3;"></div>
+                    <div class="pip" style="grid-column: 3; grid-row: 1;"></div>
+                    <div class="pip" style="grid-column: 3; grid-row: 2;"></div>
+                    <div class="pip" style="grid-column: 3; grid-row: 3;"></div>
+                </div>
+                <!-- Face 3 -->
+                <div class="face right">
+                    <div class="pip" style="grid-column: 1; grid-row: 1;"></div>
+                    <div class="pip" style="grid-column: 2; grid-row: 2;"></div>
+                    <div class="pip" style="grid-column: 3; grid-row: 3;"></div>
+                </div>
+                <!-- Face 4 -->
+                <div class="face left">
+                    <div class="pip" style="grid-column: 1; grid-row: 1;"></div>
+                    <div class="pip" style="grid-column: 1; grid-row: 3;"></div>
+                    <div class="pip" style="grid-column: 3; grid-row: 1;"></div>
+                    <div class="pip" style="grid-column: 3; grid-row: 3;"></div>
+                </div>
+                <!-- Face 5 -->
+                <div class="face top">
+                    <div class="pip" style="grid-column: 1; grid-row: 1;"></div>
+                    <div class="pip" style="grid-column: 1; grid-row: 3;"></div>
+                    <div class="pip" style="grid-column: 2; grid-row: 2;"></div>
+                    <div class="pip" style="grid-column: 3; grid-row: 1;"></div>
+                    <div class="pip" style="grid-column: 3; grid-row: 3;"></div>
+                </div>
+                <!-- Face 2 -->
+                <div class="face bottom">
+                    <div class="pip" style="grid-column: 1; grid-row: 1;"></div>
+                    <div class="pip" style="grid-column: 3; grid-row: 3;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <button onclick="rollDice()">Roll Dice</button>
+        <div class="result" id="result">Click to roll!</div>
+        <div class="debug" id="debug"></div>
     </div>
-  </div>
 
+    <script>
+        let currentX = 0;
+        let currentY = 0;
+        const maxSpin = 1440;
+
+        // CORRECTED getDiceValue function to match CSS transforms
+        function getDiceValue(x, y) {
+  // Force both angles into [0..359]
+  const normalizedX = ((x % 360) + 360) % 360;
+  const normalizedY = ((y % 360) + 360) % 360;
+
+  // If X =  90°, “top” is facing us → face 5
+  if (normalizedX === 90) return 5;
+
+  // If X = 270°, “bottom” is facing us → face 2
+  if (normalizedX === 270) return 2;
+
+  // Only when X = 0° do we look at Y
+  if (normalizedX === 0) {
+    if (normalizedY === 0)   return 1; // front
+    if (normalizedY === 90)  return 4; // left
+    if (normalizedY === 180) return 6; // back
+    if (normalizedY === 270) return 3; // right
+  }
+
+  // (All other angles should never happen, but fallback to 1)
+  return 1;
+}
+
+
+        async function diceRollAnimation() {
+  const dice = document.getElementById('dice');
+
+  // Valid “landing” rotations:
+  const validRotations = [
+    [0,   0],   // face 1
+    [270, 0],   // face 2
+    [0,   270], // face 3
+    [0,   90],  // face 4
+    [90,  0],   // face 5
+    [0,   180], // face 6
+  ];
+
+  // Pick a random final face
+  const [targetX, targetY] = validRotations[
+    Math.floor(Math.random() * validRotations.length)
+  ];
+
+  // Add 2–4 extra spin rotations (multiples of 360)
+  const extraSpinsX = 360 * (2 + Math.floor(Math.random() * 3));
+  const extraSpinsY = 360 * (2 + Math.floor(Math.random() * 3));
+
+  // **Normalize currentX/currentY % 360 to [0..359]**
+  const remX = ((currentX % 360) + 360) % 360;
+  const remY = ((currentY % 360) + 360) % 360;
+
+  // Compute the delta needed to land exactly at targetX and targetY
+  // (so finalX % 360 === targetX, finalY % 360 === targetY)
+  const deltaX = targetX - remX;
+  const deltaY = targetY - remY;
+
+  // Now compute finalX and finalY
+  const finalX = currentX + extraSpinsX + deltaX;
+  const finalY = currentY + extraSpinsY + deltaY;
+
+  // Store these for next time
+  currentX = finalX;
+  currentY = finalY;
+
+  // Apply the rotation with a smooth 1.5s animation
+  dice.style.transition = 'transform 1.5s ease-out';
+  dice.style.transform = `rotateX(${currentX}deg) rotateY(${currentY}deg)`;
+
+  // Wait until animation finishes…
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+
+  // Read the face‐value
+  const value = getDiceValue(currentX, currentY);
+
+  // If the numbers got huge, mod them back into [0..359] to avoid overflow
+  if (Math.abs(currentX) > maxSpin || Math.abs(currentY) > maxSpin) {
+    currentX = remX + extraSpinsX + deltaX; // or simply currentX % 360
+    currentY = remY + extraSpinsY + deltaY; // but either way, keep them small
+    dice.style.transition = 'none';
+    dice.style.transform = `rotateX(${currentX}deg) rotateY(${currentY}deg)`;
+  }
+
+  return value;
+}
+
+        async function rollDice() {
+            const resultDiv = document.getElementById('result');
+            const debugDiv = document.getElementById('debug');
+            
+            resultDiv.textContent = 'Rolling...';
+            debugDiv.textContent = '';
+            
+            const value = await diceRollAnimation();
+            
+            resultDiv.textContent = `You rolled: ${value}`;
+            debugDiv.textContent = `Rotation: X=${currentX % 360}°, Y=${currentY % 360}°`;
+        }
+
+        // Initialize with a random position
+        window.addEventListener('load', () => {
+            rollDice();
+        });
+    </script>
 </body>
 </html>

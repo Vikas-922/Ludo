@@ -335,7 +335,7 @@ Dice & Controls Area
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  transition: scale 0.60s ease-in-out;
+  transition: scale 0.1s ease-in-out;
 }
 
 .dice-area.rolling{

@@ -277,6 +277,8 @@ function getDiceValue(x, y) {
 let rollingTimeout,nextTimeout = null; // To cancel current animation
 let isRolling = false;
 async function diceRollAnimation() {
+    console.log("Rolling the dice...");
+    
    if (rollingTimeout) {
     clearTimeout(rollingTimeout);
     clearTimeout(nextTimeout);
@@ -296,7 +298,7 @@ async function diceRollAnimation() {
   const finalX = spinX + baseX;
   const finalY = spinY + baseY;
 
-  dice.style.transition = 'transform 0.8s ease-out';
+  dice.style.transition = 'transform 0.7s ease-out';
   dice.style.transform  = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
   
   setTimeout(() => {    
@@ -314,14 +316,14 @@ async function diceRollAnimation() {
   rollingTimeout = setTimeout(() => {    
       dice.style.pointerEvents = 'none'; // Disable dice after rolling
       document.querySelector('.dice-area').classList.remove('rolling');
-  }, 700);
+  }, 600);
 
   nextTimeout = setTimeout(() => {
         diceValue = value;
         rollDice();
         isRolling = false;
         rollingTimeout = null;
-    }, 1000); 
+    }, 900); 
 }
 
 
@@ -367,7 +369,10 @@ async function rollDice() {
     if (playablePieces.length === 0) {
         dice.style.pointerEvents = 'auto';
         nextTurn();
-    }else if (playablePieces.length === 1) {
+    }else if (
+            playablePieces.length === 1 || 
+            (playablePieces.length > 0 && playablePieces.every(p => p.dataset.position === 'home'))
+        ) {
         //click on the playable piece
         playablePieces[0].classList.add('selected');
         selectedPiece = playablePieces[0]; 
@@ -402,12 +407,14 @@ function handlePieceClick(event) {
     movePiece(selectedPiece, diceValue);
 }
 
+
+
 /**
  * Moves a piece based on the dice value.
  * @param {HTMLElement} piece - The piece element to move.
  * @param {number} steps - The number of steps to move.
  */
-function movePiece(piece, steps) {
+async function movePiece(piece, steps) {    
   const player = players[currentTurn];
   const color  = player.color;    // e.g. 'red'
   const pathArray = fullPaths[color];
@@ -425,11 +432,11 @@ function movePiece(piece, steps) {
         deselectPiece();
         return;
       }
-      startCell.appendChild(piece);
-      piece.dataset.position = 'path';
-      piece.dataset.pathIndex = "0";
-      checkAndKillOpponent(piece); // check if it lands on an opponent
-      resetTurn();
+        await animatePieceToCell(piece, startCell);
+        piece.dataset.position = 'path';
+        piece.dataset.pathIndex = '0';
+        checkAndKillOpponent(piece);
+        resetTurn();
     } else {
     //   showMessage("You need a 6 to move out of home.");
       deselectPiece();
@@ -459,7 +466,8 @@ function movePiece(piece, steps) {
       deselectPiece();
       return;
     }
-    finishCell.appendChild(piece);
+    // finishCell.appendChild(piece);
+    await animatePieceMovementToTargetIndex(piece, pathArray, currentIndex, newIndex);
     piece.dataset.position = 'finished';
     piece.dataset.pathIndex = finishIndex.toString();
     piece.style.position = 'relative';
@@ -482,10 +490,12 @@ function movePiece(piece, steps) {
   }
 
   // Move the piece DOM‐node:
-  targetCell.appendChild(piece);
+//   targetCell.appendChild(piece);
+  await animatePieceMovementToTargetIndex(piece, pathArray, currentIndex, newIndex);
   piece.dataset.position = (newIndex < COMMON_LENGTH ? 'path' : 'home-path');
   piece.dataset.pathIndex = newIndex.toString();
-
+  console.log("going to reset turn");
+  
   // (4) If we landed in the “common” portion (i.e. newIndex < COMMON_LENGTH), try to kill:
   if (newIndex < COMMON_LENGTH) {
     checkAndKillOpponent(piece);
@@ -499,7 +509,7 @@ function movePiece(piece, steps) {
  * Checks if the moved piece has landed on an opponent's piece and kills it.
  * @param {HTMLElement} movedPiece - The piece that just moved.
  */
-function checkAndKillOpponent(movedPiece) {
+async function checkAndKillOpponent(movedPiece) {
     const currentCell = movedPiece.parentNode;
     const movedPiecePlayer = movedPiece.dataset.player;
 
@@ -510,7 +520,7 @@ function checkAndKillOpponent(movedPiece) {
 
     const piecesOnCell = Array.from(currentCell.querySelectorAll('.piece'));
 
-    piecesOnCell.forEach(piece => {
+    await Promise.all(piecesOnCell.map(async piece => {
         if (piece !== movedPiece && piece.dataset.player !== movedPiecePlayer) {
             // This is an opponent's piece, kill it!
             const opponentPlayer = players[piece.dataset.player];
@@ -520,7 +530,8 @@ function checkAndKillOpponent(movedPiece) {
             // Move piece back to its home circle
             const homeCircle = document.getElementById(opponentPlayer.homeCircles[pieceNumber - 1]);
             if (homeCircle) {
-                homeCircle.appendChild(piece);
+                // homeCircle.appendChild(piece);
+                await animatePieceToCell(piece, homeCircle, 500);
                 piece.dataset.position = 'home';
                 piece.dataset.pathIndex = -1;
                 // showMessage(`${movedPiecePlayer.toUpperCase()} killed ${piece.dataset.player.toUpperCase()}'s piece!`);
@@ -528,7 +539,7 @@ function checkAndKillOpponent(movedPiece) {
                 console.error(`Home circle for killed piece ${pieceId} not found.`);
             }
         }
-    });
+    }));
 }
 
 /**
@@ -549,7 +560,11 @@ function checkWinCondition() {
  */
 function resetTurn() {
     deselectPiece(); // Deselect any active piece
+    console.log("resetting turn");
+    
     dice.style.pointerEvents = 'auto'; // Enable dice for next roll
+    console.log("dice.style.pointerEvents", dice.style.pointerEvents);
+    
     if (diceValue !== 6) { // If not a 6, switch turn
         nextTurn();
     } else {
@@ -597,3 +612,53 @@ window.onload = function() {
     gameStarted = true;
     // showMessage("Welcome to Ludo! Red player starts. Roll the dice!");
 };
+
+
+
+///////////====================================================================
+
+async function animatePieceToCell(piece, targetCell, duration = 200) {
+  dice.style.pointerEvents = 'none'; 
+  const pieceRect = piece.getBoundingClientRect();
+  const targetRect = targetCell.getBoundingClientRect();
+
+  const dx = targetRect.left - pieceRect.left;
+  const dy = targetRect.top - pieceRect.top;
+
+  // Set position absolute (if not already)
+  piece.style.position = 'absolute';
+  piece.style.pointerEvents = 'none'; // Prevent click during animation
+  piece.style.zIndex = 1000;
+  piece.style.transition = `transform ${duration}ms ease`;
+
+  piece.style.transform = `translate(${dx}px, ${dy}px)`;
+
+  await new Promise(resolve => setTimeout(resolve, duration));
+
+  // Reset transform and move DOM element
+  piece.style.transition = 'none';
+  piece.style.transform = 'none';
+  piece.style.pointerEvents = '';
+  piece.style.zIndex = '';
+
+  targetCell.appendChild(piece);
+  piece.style.position = 'relative';
+  piece.style.left = 'unset';
+  piece.style.top = 'unset';
+}
+
+
+async function animatePieceMovementToTargetIndex(piece,pathArray, fromIndex, toIndex) {
+    dice.style.pointerEvents = 'none'; 
+  for (let i = fromIndex + 1; i <= toIndex; i++) {
+    const cellId = pathArray[i];
+    const cell = document.getElementById(cellId);
+    if (!cell) {
+      console.error(`Cell ${cellId} not found during animation.`);
+      showMessage("Error: Path animation failed.");
+      return;
+    }
+
+    await animatePieceToCell(piece, cell); // Animate to next step
+  }
+}

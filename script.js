@@ -5,7 +5,7 @@ const currentPlayerDisplay = document.getElementById('current-player-color');
 const messageBox = document.getElementById('message-box');
 const messageText = document.getElementById('message-text');
 const messageButton = document.getElementById('message-button');
-const diceImg = document.getElementById('diceImg');
+const diceRollingAudio = new Audio('media/sounds/Rolling_1s.mp3'); // Sound for dice rolling
 
 // Define player colors and their starting/path/home positions
 const players = {
@@ -103,8 +103,6 @@ function intializeFullpaths() {
         // Store in fullPaths
         fullPaths[color] = fullPath;
     });
-
-    // console.log('Full Paths:', fullPaths);
 }
 
 intializeFullpaths();
@@ -128,9 +126,6 @@ function showMessage(message, isLoading = false) {
             messageBox.classList.remove("show");
             // Additional logic after message is dismissed, if needed
         };
-        // setTimeout(() => {
-        //     messageBox.classList.remove('show');
-        // }, 1000);
     }
 }
 
@@ -248,54 +243,6 @@ async function fetchLudoInsight(playerColor, rolledValue) {
 }
 
 
-function animateDiceRoll(diceElement, finalValue) {
-    return new Promise((resolve) => {
-        const blurFrames = [
-            "images/dice_blur_1.svg",
-            "images/dice_blur_2.svg",
-            "images/dice_blur_3.svg"
-        ];
-
-        const getRandomBlurFrame = () =>
-            blurFrames[Math.floor(Math.random() * blurFrames.length)];
-
-        const getRandomDiceFrame = () => {
-            const tempValue = Math.floor(Math.random() * 6) + 1;
-            return `images/dice_${tempValue}.svg`;
-        };
-
-        let rollCount = 6;
-        const interval = 80;
-
-        let angle = 0;
-
-        const animation = setInterval(() => {
-            diceElement.src = rollCount % 2 === 0 ? getRandomBlurFrame() : getRandomDiceFrame();
-
-            // Diagonal 3D-style rotation
-            angle += 100; // You can increase or randomize this for more dynamic effect
-            diceElement.style.transform = `rotate3d(1, 1, 0, ${angle}deg)`;
-            diceElement.style.transition = "transform 0.08s linear";
-
-            rollCount--;
-
-            if (rollCount === 0) {
-                clearInterval(animation);
-
-                // Final face + reset rotation smoothly
-                setTimeout(() => {
-                    diceElement.src = `images/dice_${finalValue}.svg`;
-                    diceElement.style.transform = "rotate3d(0, 0, 0, 0deg)";
-                    diceElement.style.transition = "transform 0.3s ease";
-                    resolve();
-                }, 50);
-            }
-        }, interval);
-     
-    });
-}
-
-
 /**
  * Handles the dice roll event.
  */
@@ -327,8 +274,16 @@ function getDiceValue(x, y) {
   return 1; // fallback
 }
 
+let rollingTimeout,nextTimeout = null; // To cancel current animation
+let isRolling = false;
 async function diceRollAnimation() {
-  const dice = document.getElementById('dice');
+   if (rollingTimeout) {
+    clearTimeout(rollingTimeout);
+    clearTimeout(nextTimeout);
+    isRolling = false;
+  }
+
+  isRolling = true;
 
   // 1) Pick a random face 1–6:
   const faceNum = Math.floor(Math.random() * 6) + 1;
@@ -338,41 +293,46 @@ async function diceRollAnimation() {
   const spinX = 360 * (2 + Math.floor(Math.random() * 2)); // 720 or 1080
   const spinY = 360 * (2 + Math.floor(Math.random() * 2)); // 720 or 1080
 
-  // 3) Final orientation is spin + the “base” for that face:
   const finalX = spinX + baseX;
   const finalY = spinY + baseY;
 
-  // 4) Animate all at once:
-  dice.style.transition = 'transform 1.5s ease-out';
+  dice.style.transition = 'transform 0.8s ease-out';
   dice.style.transform  = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
-
-  // 5) Wait until it finishes (1.5 seconds):
-  document.querySelector('.dice-area').classList.add('rolling');
-  await new Promise(res => setTimeout(res, 1500));
-  document.querySelector('.dice-area').classList.remove('rolling');
   
-  // 6) Now we know exactly which face is on top:
-  const value = getDiceValue(finalX, finalY);
+  setTimeout(() => {    
+      diceRollingAudio.play(); // Play dice rolling sound
+  }, 50);
 
-  // 7) For the next roll, store only the “base” part, not the huge spin:
+  document.querySelector('.dice-area').classList.add('rolling');
+  
+  const value = getDiceValue(finalX, finalY);
+  
+  // For the next roll, store only the “base” part, not the huge spin:
   currentX = baseX;
   currentY = baseY;
+  
+  rollingTimeout = setTimeout(() => {    
+      dice.style.pointerEvents = 'none'; // Disable dice after rolling
+      document.querySelector('.dice-area').classList.remove('rolling');
+  }, 700);
 
-  return value;
+  nextTimeout = setTimeout(() => {
+        diceValue = value;
+        rollDice();
+        isRolling = false;
+        rollingTimeout = null;
+    }, 1000); 
 }
 
 
-let abc = [6,5,2,1]
+// let abc = [6,5,2,1]
 async function rollDice() {
     if (selectedPiece) {
         showMessage("Please move your selected piece or deselect it.");
+        console.log("Please move your selected piece or deselect it.");
+        
         return;
     }
-
-    // diceValue = abc[Math.floor(Math.random() * 3) + 0];
-    diceValue = await diceRollAnimation();    
-
-    dice.style.pointerEvents = 'none'; // Disable dice after rolling
 
     // let initialMessage = `${currentTurn.toUpperCase()} rolled a ${diceValue}!`;
     // showMessage(initialMessage + '<br>✨ Getting Ludo Insight... ✨', true); // Show loading
@@ -402,7 +362,6 @@ async function rollDice() {
             playablePieces.push(piece);
         }
     });
-    // console.log('b');
     
     // If no playable pieces, end turn
     if (playablePieces.length === 0) {
@@ -418,13 +377,9 @@ async function rollDice() {
         // Highlight playable pieces
         playablePieces.forEach(piece => piece.classList.add('selected'));
     }
-    // console.log('c');
 }
 
-/**
- * Handles piece click events.
- * @param {Event} event - The click event.
- */
+
 function handlePieceClick(event) {
     const clickedPiece = event.currentTarget;
     const playerColor = clickedPiece.dataset.player;
@@ -622,7 +577,7 @@ function nextTurn() {
     const playerColors = ['red', 'yellow', 'blue', 'green'];
     
     const currentIndex = playerColors.indexOf(currentTurn);
-    console.log(currentTurn, (currentIndex + 1) % playerColors.length);
+    // console.log(currentTurn, (currentIndex + 1) % playerColors.length);
     currentTurn = playerColors[(currentIndex + 1) % playerColors.length];
     // currentPlayerDisplay.textContent = currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1);
     currentPlayerDisplay.textContent = currentTurn;
@@ -632,7 +587,7 @@ function nextTurn() {
 }
 
 // Event Listeners
-dice.addEventListener('click', rollDice);
+dice.addEventListener('click', diceRollAnimation);
 
 // Initial setup on window load
 window.onload = function() {    

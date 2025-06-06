@@ -11,8 +11,12 @@ let pieceSize = 20; // Size of a piece for positioning
 
 function onGameStart() {
     const piece = document.querySelector('.piece');
-    pieceSize = getComputedStyle(piece).width; // e.g., "26px"
-    console.log(parseInt(pieceSize));
+    pieceSize = roundoff(getComputedStyle(piece).width); // e.g., "26px"
+    console.log(pieceSize);
+}
+
+function roundoff(size) {
+    return Math.round(parseFloat(size));
 }
 
 // Define player colors and their starting/path/home positions
@@ -338,8 +342,7 @@ async function diceRollAnimation() {
 async function rollDice() {
     if (selectedPiece) {
         showMessage("Please move your selected piece or deselect it.");
-        console.log("Please move your selected piece or deselect it.");
-        
+        console.log("Please move your selected piece or deselect it.");        
         return;
     }
 
@@ -383,7 +386,7 @@ async function rollDice() {
         //click on the playable piece
         playablePieces[0].classList.add('selected');
         selectedPiece = playablePieces[0]; 
-        movePiece(selectedPiece, diceValue); // Move it immediately
+        await movePiece(selectedPiece, diceValue); // Move it immediately
         playablePieces[0].classList.remove('selected');
     } else {
         // Highlight playable pieces
@@ -443,7 +446,7 @@ async function movePiece(piece, steps) {
         arrangePiecesInCell(startCell);
         piece.dataset.position = 'path';
         piece.dataset.pathIndex = '0';
-        checkAndKillOpponent(piece);
+        // checkAndKillOpponent(piece);
         resetTurn();
     } else {
     //   showMessage("You need a 6 to move out of home.");
@@ -476,12 +479,9 @@ async function movePiece(piece, steps) {
     }
     // finishCell.appendChild(piece);
     await animatePieceMovementToTargetIndex(piece, pathArray, currentIndex, newIndex);
+
     piece.dataset.position = 'finished';
     piece.dataset.pathIndex = finishIndex.toString();
-    piece.style.position = 'relative';
-    piece.style.left = 'unset';
-    piece.style.top  = 'unset';
-    showMessage(`${color.toUpperCase()} piece finished!`);
     checkWinCondition();
     resetTurn();
     return;
@@ -541,12 +541,16 @@ async function checkAndKillOpponent(movedPiece) {
                 await animatePieceToCell(piece, homeCircle, 500);
                 piece.dataset.position = 'home';
                 piece.dataset.pathIndex = -1;
+                piece.style.width = `${pieceSize}px`;
+                piece.style.height = `${pieceSize}px`;
                 // showMessage(`${movedPiecePlayer.toUpperCase()} killed ${piece.dataset.player.toUpperCase()}'s piece!`);
             } else {
                 console.error(`Home circle for killed piece ${pieceId} not found.`);
             }
         }
     }));
+
+    arrangePiecesInCell(currentCell); // Re-arrange pieces in the current cell
 }
 
 /**
@@ -653,6 +657,7 @@ async function animatePieceToCell(piece, targetCell, duration = 200) {
   piece.style.top = 'unset';
 
 }
+
 
 
 function arrangePiecesInCell(cell) {

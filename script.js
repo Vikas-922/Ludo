@@ -6,6 +6,14 @@ const messageBox = document.getElementById('message-box');
 const messageText = document.getElementById('message-text');
 const messageButton = document.getElementById('message-button');
 const diceRollingAudio = new Audio('media/sounds/Rolling_1s.mp3'); // Sound for dice rolling
+let pieceSize = 20; // Size of a piece for positioning
+
+
+function onGameStart() {
+    const piece = document.querySelector('.piece');
+    pieceSize = getComputedStyle(piece).width; // e.g., "26px"
+    console.log(parseInt(pieceSize));
+}
 
 // Define player colors and their starting/path/home positions
 const players = {
@@ -81,7 +89,7 @@ const safeCells = [
 
 const fullPaths = {};
 
-function intializeFullpaths() {
+function initializeFullPaths() {
     ['red', 'green', 'yellow', 'blue'].forEach(color => {
         let fullPath = [];
 
@@ -105,7 +113,7 @@ function intializeFullpaths() {
     });
 }
 
-intializeFullpaths();
+initializeFullPaths();
 
 
 /**
@@ -276,9 +284,8 @@ function getDiceValue(x, y) {
 
 let rollingTimeout,nextTimeout = null; // To cancel current animation
 let isRolling = false;
-async function diceRollAnimation() {
-    console.log("Rolling the dice...");
-    
+
+async function diceRollAnimation() {    
    if (rollingTimeout) {
     clearTimeout(rollingTimeout);
     clearTimeout(nextTimeout);
@@ -433,6 +440,7 @@ async function movePiece(piece, steps) {
         return;
       }
         await animatePieceToCell(piece, startCell);
+        arrangePiecesInCell(startCell);
         piece.dataset.position = 'path';
         piece.dataset.pathIndex = '0';
         checkAndKillOpponent(piece);
@@ -494,7 +502,6 @@ async function movePiece(piece, steps) {
   await animatePieceMovementToTargetIndex(piece, pathArray, currentIndex, newIndex);
   piece.dataset.position = (newIndex < COMMON_LENGTH ? 'path' : 'home-path');
   piece.dataset.pathIndex = newIndex.toString();
-  console.log("going to reset turn");
   
   // (4) If we landed in the “common” portion (i.e. newIndex < COMMON_LENGTH), try to kill:
   if (newIndex < COMMON_LENGTH) {
@@ -560,10 +567,8 @@ function checkWinCondition() {
  */
 function resetTurn() {
     deselectPiece(); // Deselect any active piece
-    console.log("resetting turn");
     
     dice.style.pointerEvents = 'auto'; // Enable dice for next roll
-    console.log("dice.style.pointerEvents", dice.style.pointerEvents);
     
     if (diceValue !== 6) { // If not a 6, switch turn
         nextTurn();
@@ -592,7 +597,6 @@ function nextTurn() {
     const playerColors = ['red', 'yellow', 'blue', 'green'];
     
     const currentIndex = playerColors.indexOf(currentTurn);
-    // console.log(currentTurn, (currentIndex + 1) % playerColors.length);
     currentTurn = playerColors[(currentIndex + 1) % playerColors.length];
     // currentPlayerDisplay.textContent = currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1);
     currentPlayerDisplay.textContent = currentTurn;
@@ -610,6 +614,7 @@ window.onload = function() {
     createPieces();
     nextTurn(); // Set initial player display
     gameStarted = true;
+    onGameStart(); 
     // showMessage("Welcome to Ludo! Red player starts. Roll the dice!");
 };
 
@@ -619,6 +624,7 @@ window.onload = function() {
 
 async function animatePieceToCell(piece, targetCell, duration = 200) {
   dice.style.pointerEvents = 'none'; 
+//   const startCell = piece.parentElement;
   const pieceRect = piece.getBoundingClientRect();
   const targetRect = targetCell.getBoundingClientRect();
 
@@ -642,13 +648,52 @@ async function animatePieceToCell(piece, targetCell, duration = 200) {
   piece.style.zIndex = '';
 
   targetCell.appendChild(piece);
-  piece.style.position = 'relative';
+//   piece.style.position = 'relative';
   piece.style.left = 'unset';
   piece.style.top = 'unset';
+
 }
 
 
+function arrangePiecesInCell(cell) {
+  const pieces = cell.querySelectorAll('.piece'); // Make sure each piece has class="piece"
+  const total = pieces.length;
+  const radius = 8; // You can tweak this to control spacing
+
+  console.log('total', total);
+  console.log("piecesize", pieceSize);
+
+  if (total === 1) {
+    pieces[0].style.left = 'unset';
+    pieces[0].style.top = 'unset';
+    pieces[0].style.transform = 'none';
+    pieces[0].style.width = `${pieceSize}px`;
+    pieces[0].style.height = `${pieceSize}px`;
+    pieces[0].style.zIndex = 2;
+    return;
+  }
+
+  let zIndex = 2; 
+  pieces.forEach((p, index) => {
+    const angle = (index / total) * (2 * Math.PI);
+    const offsetX = Math.cos(angle) * radius;
+    const offsetY = Math.sin(angle) * radius;
+
+    p.style.position = 'absolute';
+    p.style.width = '20px'; 
+    p.style.height = '20px';
+    p.style.left = `calc(50% + ${offsetX}px)`;
+    p.style.top = `calc(50% + ${offsetY}px)`;
+    p.style.transform = 'translate(-50%, -50%)'; // Center the piece
+    p.style.zIndex = zIndex++;
+  });
+}
+
+
+
 async function animatePieceMovementToTargetIndex(piece,pathArray, fromIndex, toIndex) {
+    const startCell = document.getElementById(pathArray[fromIndex]);
+    const targetCell = document.getElementById(pathArray[toIndex]);
     dice.style.pointerEvents = 'none'; 
   for (let i = fromIndex + 1; i <= toIndex; i++) {
     const cellId = pathArray[i];
@@ -661,4 +706,8 @@ async function animatePieceMovementToTargetIndex(piece,pathArray, fromIndex, toI
 
     await animatePieceToCell(piece, cell); // Animate to next step
   }
+
+  
+  arrangePiecesInCell(startCell);
+  arrangePiecesInCell(targetCell);
 }

@@ -1,3 +1,5 @@
+import {handleComputerMove, restartAudio} from './utils.js'; // Import computer player logic
+
 // Game state variables
 const board = document.getElementById('ludo-board');
 const dice = document.getElementById('dice');
@@ -12,7 +14,7 @@ let pieceSize = 20; // Size of a piece for positioning
 function onGameStart() {
     const piece = document.querySelector('.piece');
     pieceSize = roundoff(getComputedStyle(piece).width); // e.g., "26px"
-    console.log(pieceSize);
+    // console.log(pieceSize);
 }
 
 function roundoff(size) {
@@ -59,7 +61,7 @@ const players = {
     }
 };
 
-let currentTurn = 'red';
+let currentTurn = 'green'; // on game start, next player starts game
 let diceValue = 0;
 let selectedPiece = null;
 let gameStarted = false;
@@ -92,6 +94,28 @@ const safeCells = [
 ];
 
 const fullPaths = {};
+
+
+// Configuration for computer players
+const computerPlayers = {
+    yellow: true,  // Set to true to make yellow a computer player
+    blue: true,    // Set to true to make blue a computer player
+    green: true,    // Set to true to make green a computer player
+    red: false
+    // red is assumed to be human player
+};
+
+// AI difficulty levels
+const AI_DIFFICULTY = {
+    EASY: 1,
+    MEDIUM: 2,
+    HARD: 3
+};
+
+const currentDifficulty = AI_DIFFICULTY.EASY;
+
+
+
 
 function initializeFullPaths() {
     ['red', 'green', 'yellow', 'blue'].forEach(color => {
@@ -289,7 +313,9 @@ function getDiceValue(x, y) {
 let rollingTimeout,nextTimeout = null; // To cancel current animation
 let isRolling = false;
 
-async function diceRollAnimation() {    
+async function diceRollAnimation() {  
+    // console.log("click on dice");
+      
    if (rollingTimeout) {
     clearTimeout(rollingTimeout);
     clearTimeout(nextTimeout);
@@ -311,11 +337,12 @@ async function diceRollAnimation() {
 
   dice.style.transition = 'transform 0.7s ease-out';
   dice.style.transform  = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
-  
-  setTimeout(() => {    
-      diceRollingAudio.play(); // Play dice rolling sound
-  }, 50);
 
+//   await new Promise(resolve => setTimeout(() => {
+    //   restartAudio(diceRollingAudio,1); // Restart dice rolling sound
+//   }, 50));
+    // diceRollingAudio.currentTime = 1; // Reset audio to start
+  restartAudio(diceRollingAudio); // Restart dice rolling sound
   document.querySelector('.dice-area').classList.add('rolling');
   
   const value = getDiceValue(finalX, finalY);
@@ -325,16 +352,19 @@ async function diceRollAnimation() {
   currentY = baseY;
   
   rollingTimeout = setTimeout(() => {    
+      diceRollingAudio.pause(); // Stop the sound
       dice.style.pointerEvents = 'none'; // Disable dice after rolling
       document.querySelector('.dice-area').classList.remove('rolling');
   }, 600);
-
-  nextTimeout = setTimeout(() => {
+//
+  nextTimeout = setTimeout(async () => {
         diceValue = value;
-        rollDice();
+        await rollDice();
         isRolling = false;
         rollingTimeout = null;
     }, 900); 
+
+
 }
 
 
@@ -361,8 +391,8 @@ async function rollDice() {
         // If 6 is rolled, any piece in home can come out
         playablePieces.push(...piecesInHome);
     }
-    console.log('dice-value', diceValue);
-    
+    console.log(`dice value = ${diceValue} , currentplayer = ${currentPlayer.color}`);
+
     // Check pieces on the path
     const piecesOnPath = currentPlayer.pieces.filter(p => p.dataset.position.includes('path'));
     piecesOnPath.forEach(piece => {
@@ -377,19 +407,29 @@ async function rollDice() {
     // If no playable pieces, end turn
     if (playablePieces.length === 0) {
         dice.style.pointerEvents = 'auto';
-        nextTurn();
-    }else if (
-            playablePieces.length === 1 || 
-            (playablePieces.length > 0 && playablePieces.every(p => p.dataset.position === 'home'))
-        ) {
-        //click on the playable piece
-        playablePieces[0].classList.add('selected');
-        selectedPiece = playablePieces[0]; 
-        await movePiece(selectedPiece, diceValue); // Move it immediately
-        playablePieces[0].classList.remove('selected');
+        await nextTurn();
     } else {
         // Highlight playable pieces
         playablePieces.forEach(piece => piece.classList.add('selected'));
+    }
+
+    
+
+
+    // Check if current player is computer
+    if (computerPlayers[currentTurn]) {
+        // Computer player logic
+        await handleComputerMove(playablePieces);
+    } else {
+        // Human player logic
+        if (playablePieces.length === 1 || 
+            (playablePieces.length > 0 && playablePieces.every(p => p.dataset.position === 'home'))) {
+            // Auto-move single piece
+            playablePieces[0].classList.add('selected');
+            selectedPiece = playablePieces[0]; 
+            await movePiece(selectedPiece, diceValue);
+            playablePieces[0].classList.remove('selected');
+        }
     }
 }
 
@@ -397,6 +437,11 @@ async function rollDice() {
 function handlePieceClick(event) {
     const clickedPiece = event.currentTarget;
     const playerColor = clickedPiece.dataset.player;
+
+    // Prevent human interaction during computer turns
+    if (computerPlayers[currentTurn]) {
+        return;
+    }
 
     if (playerColor !== currentTurn || diceValue === 0) {
         // showMessage("It's not your turn or you haven't rolled the dice yet.");
@@ -462,7 +507,10 @@ async function movePiece(piece, steps) {
 
   // (1) Overshoot: if newIndex > finishIndex, invalid:
   if (newIndex > finishIndex) {
-    showMessage("Cannot move: Overshot the finish. Try again.");
+    // showMessage("Cannot move: Overshot the finish. Try again.");
+
+    // dice.style.pointerEvents = 'auto';
+    await resetTurn();
     // deselectPiece();
     return;
   }
@@ -568,17 +616,28 @@ function checkWinCondition() {
 /**
  * Resets the turn after a piece has been moved or no valid moves exist.
  */
-function resetTurn() {
+async function resetTurn() {
     deselectPiece(); // Deselect any active piece
     
     dice.style.pointerEvents = 'auto'; // Enable dice for next roll
     
     if (diceValue !== 6) { // If not a 6, switch turn
-        nextTurn();
+        await nextTurn();
+        return;
     } else {
         // showMessage(`${currentTurn.toUpperCase()} rolled a 6! Roll again!`);
     }
     diceValue = 0; // Reset dice value
+
+    if (computerPlayers[currentTurn]) {
+        // console.log(` It's ${currentTurn.toUpperCase()}'s turn! Rolling dice...  == ${dice.style.pointerEvents === "none"}`, );
+
+        setTimeout(async () => {
+            // if (dice.style.pointerEvents === "none") {
+               await diceRollAnimation();
+            // }
+        }, 400);
+    }
 }
 
 /**
@@ -596,28 +655,47 @@ function deselectPiece() {
 /**
  * Switches to the next player's turn.
  */
-function nextTurn() {
+async function nextTurn() {
+
+    await sleep(500);
     const playerColors = ['red', 'yellow', 'blue', 'green'];
     
     const currentIndex = playerColors.indexOf(currentTurn);
     currentTurn = playerColors[(currentIndex + 1) % playerColors.length];
-    // currentPlayerDisplay.textContent = currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1);
     currentPlayerDisplay.textContent = currentTurn;
     currentPlayerDisplay.className = ''; // Clear previous color class
     currentPlayerDisplay.classList.add(`${currentTurn}-turn`);
     // showMessage(`It's ${currentTurn.toUpperCase()}'s turn!`);
+
+    // Auto-roll for computer players after a short delay
+    // console.log(` Inside nextTurn ,,, It's ${currentTurn.toUpperCase()}'s turn!  ${dice.style.pointerEvents === "none"}`, );
+    
+    if (computerPlayers[currentTurn]) {
+        // console.log(` It's ${currentTurn.toUpperCase()}'s turn! Rolling dice...  == ${dice.style.pointerEvents === "none"}`, );
+
+        // setTimeout(() => {
+            // if (dice.style.pointerEvents === "none") {
+               await diceRollAnimation();
+            // }
+        // }, 400);
+    }
+    
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // Event Listeners
 dice.addEventListener('click', diceRollAnimation);
 
 // Initial setup on window load
-window.onload = function() {    
+window.onload = async function() {    
     initializeBoard();
     createPieces();
-    nextTurn(); // Set initial player display
-    gameStarted = true;
     onGameStart(); 
+    await nextTurn(); // Set initial player display
+    gameStarted = true;
     // showMessage("Welcome to Ludo! Red player starts. Roll the dice!");
 };
 
@@ -664,8 +742,8 @@ function arrangePiecesInCell(cell) {
   const total = pieces.length;
   const radius = 8; // You can tweak this to control spacing
 
-  console.log('total', total);
-  console.log("piecesize", pieceSize);
+//   console.log('total', total);
+//   console.log("piecesize", pieceSize);
 
   if (total === 1) {
     pieces[0].style.left = 'unset';
@@ -715,3 +793,16 @@ async function animatePieceMovementToTargetIndex(piece,pathArray, fromIndex, toI
   arrangePiecesInCell(startCell);
   arrangePiecesInCell(targetCell);
 }
+
+
+function setSelectedPiece(piece) {
+    selectedPiece = piece;
+}
+
+
+
+
+export {
+   setSelectedPiece, diceValue, currentDifficulty, AI_DIFFICULTY,
+   fullPaths, players, selectedPiece, movePiece
+};

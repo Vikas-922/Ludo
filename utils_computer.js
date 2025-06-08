@@ -349,6 +349,9 @@ function restartAudio(audio, fromTime = 0) {
   return audio.play();   // returns a Promise you can await if needed
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 
 async function animatePieceToCell(piece, targetCell, duration = 200) {
@@ -498,5 +501,6 @@ export {handleComputerMove,
     animatePieceMovementToTargetIndex,
     startHeartbeat,
     stopHeartbeat,
-    changeDiceColor
+    changeDiceColor,
+    sleep,
 }

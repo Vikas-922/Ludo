@@ -1,7 +1,8 @@
 import {handleComputerMove, restartAudio, animatePieceMovementToTargetIndex,
     animatePieceToCell, arrangePiecesInCell, startHeartbeat,
-    stopHeartbeat, changeDiceColor,
-} from './utils.js'; // Import computer player logic
+    stopHeartbeat, changeDiceColor,sleep,
+} from './utils_computer.js'; // Import computer player logic
+
 
 // Game state variables
 const board = document.getElementById('ludo-board');
@@ -69,6 +70,25 @@ let diceValue = 0;
 let selectedPiece = null;
 let gameStarted = false;
 
+
+// Configuration for computer players
+const computerPlayers = {
+    yellow: true,  // Set to true to make yellow a computer player
+    blue: true,    // Set to true to make blue a computer player
+    green: true,    // Set to true to make green a computer player
+    red: false
+    // red is assumed to be human player
+};
+
+// AI difficulty levels
+const AI_DIFFICULTY = {
+    EASY: 1,
+    MEDIUM: 2,
+    HARD: 3
+};
+
+const currentDifficulty = AI_DIFFICULTY.EASY;
+
 // Common path for all players (52 cells)
 // This array defines the sequence of cells for pieces to move on.
 // The indices correspond to the grid positions (row-col).
@@ -97,26 +117,6 @@ const safeCells = [
 ];
 
 const fullPaths = {};
-
-
-// Configuration for computer players
-const computerPlayers = {
-    yellow: true,  // Set to true to make yellow a computer player
-    blue: true,    // Set to true to make blue a computer player
-    green: true,    // Set to true to make green a computer player
-    red: true
-    // red is assumed to be human player
-};
-
-// AI difficulty levels
-const AI_DIFFICULTY = {
-    EASY: 1,
-    MEDIUM: 2,
-    HARD: 3
-};
-
-const currentDifficulty = AI_DIFFICULTY.MEDIUM;
-
 
 
 
@@ -341,10 +341,6 @@ async function diceRollAnimation() {
   dice.style.transition = 'transform 0.7s ease-out';
   dice.style.transform  = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
 
-//   await new Promise(resolve => setTimeout(() => {
-    //   restartAudio(diceRollingAudio,1); // Restart dice rolling sound
-//   }, 50));
-    // diceRollingAudio.currentTime = 1; // Reset audio to start
   restartAudio(diceRollingAudio); // Restart dice rolling sound
   document.querySelector('.dice-area').classList.add('rolling');
   
@@ -366,8 +362,6 @@ async function diceRollAnimation() {
         isRolling = false;
         rollingTimeout = null;
     }, 900); 
-
-
 }
 
 
@@ -398,11 +392,12 @@ async function rollDice() {
 
     // Check pieces on the path
     const piecesOnPath = currentPlayer.pieces.filter(p => p.dataset.position.includes('path'));
+        const endOfFullPath = fullPaths[currentPlayer.color].length;
     piecesOnPath.forEach(piece => {
         const currentPathIndex = parseInt(piece.dataset.pathIndex);
         // Simplified check: if on common path, it can move. More complex logic is in movePiece.
         // This part just determines if *any* piece is movable.
-        if (currentPathIndex !== -1 && (currentPathIndex + diceValue) < fullPaths[currentPlayer.color].length) { // If it's on the path (not home)
+        if (currentPathIndex !== -1 && (currentPathIndex + diceValue) < endOfFullPath) { // If it's on the path (not home)
             playablePieces.push(piece);
         }
     });
@@ -417,9 +412,6 @@ async function rollDice() {
         // Highlight playable pieces
         playablePieces.forEach(piece => piece.classList.add('selected'));
     }
-
-
-    
 
 
     // Check if current player is computer
@@ -668,6 +660,7 @@ async function nextTurn() {
     currentPlayerDisplay.textContent = currentTurn;
     currentPlayerDisplay.className = ''; // Clear previous color class
     currentPlayerDisplay.classList.add(`${currentTurn}-turn`);
+    
     startHeartbeat(currentTurn); 
     changeDiceColor(currentTurn);
 
@@ -683,9 +676,6 @@ async function nextTurn() {
     
 }
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 // Event Listeners
 dice.addEventListener('click', diceRollAnimation);

@@ -3,109 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="index.css">
-    <script type="module" src="computer.js" crossorigin="anonymous"></script>
-    <title>Ludo Game</title>
-    
+    <title>Ludo Game - Play Online</title>
+    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
     </style>
 </head>
-<body>
-    <div class="game-container">
-        <div class="current-player">Current Player: <span id="current-player-color">Red</span></div>
-        <div class="ludo-board" id="ludo-board">
-            <div class="home-area home-red">
-                <div class="home-circle" id="home-red-1"></div>
-                <div class="home-circle" id="home-red-2"></div>
-                <div class="home-circle" id="home-red-3"></div>
-                <div class="home-circle" id="home-red-4"></div>
+<body data-theme="dark">
+    <div class="container">
+        <div class="header">
+            <div class="theme-toggle" onclick="toggleTheme()">
+                <i class="fas fa-sun" id="theme-icon"></i>
             </div>
-            <div class="home-area home-green">
-                <div class="home-circle" id="home-green-1"></div>
-                <div class="home-circle" id="home-green-2"></div>
-                <div class="home-circle" id="home-green-3"></div>
-                <div class="home-circle" id="home-green-4"></div>
+            <div class="logo">
+                <i class="fas fa-dice"></i> LUDO
             </div>
-            <div class="home-area home-yellow">
-                <div class="home-circle" id="home-yellow-1"></div>
-                <div class="home-circle" id="home-yellow-2"></div>
-                <div class="home-circle" id="home-yellow-3"></div>
-                <div class="home-circle" id="home-yellow-4"></div>
-            </div>
-            <div class="home-area home-blue">
-                <div class="home-circle" id="home-blue-1"></div>
-                <div class="home-circle" id="home-blue-2"></div>
-                <div class="home-circle" id="home-blue-3"></div>
-                <div class="home-circle" id="home-blue-4"></div>
-            </div>
+            <div class="subtitle">Experience the classic board game in a whole new way!</div>
+        </div>
 
-            <div class="center-triangle">
-                <div class="triangle red"></div>
-                <div class="triangle green"></div>
-                <div class="triangle blue"></div>
-                <div class="triangle yellow"></div>
-                <div id="cell-8-7" class="redHome"></div>
-                <div id="cell-7-8" class="greenHome"></div>
-                <div id="cell-8-9" class="blueHome"></div>
-                <div id="cell-9-8" class="yellowHome"></div>
-
-
-                <div class="dice-area">
-                    <div class="scene">
-                        <div class="dice" id="dice">
-                            <!-- Face 1 -->
-                            <div class="face front">
-                                <div class="pip" style="grid-column: 2; grid-row: 2;"></div>
-                            </div>
-                            <!-- Face 6 -->
-                            <div class="face back">
-                                <div class="pip" style="grid-column: 1; grid-row: 1;"></div>
-                                <div class="pip" style="grid-column: 1; grid-row: 2;"></div>
-                                <div class="pip" style="grid-column: 1; grid-row: 3;"></div>
-                                <div class="pip" style="grid-column: 3; grid-row: 1;"></div>
-                                <div class="pip" style="grid-column: 3; grid-row: 2;"></div>
-                                <div class="pip" style="grid-column: 3; grid-row: 3;"></div>
-                            </div>
-                            <!-- Face 3 -->
-                            <div class="face right">
-                                <div class="pip" style="grid-column: 1; grid-row: 1;"></div>
-                                <div class="pip" style="grid-column: 2; grid-row: 2;"></div>
-                                <div class="pip" style="grid-column: 3; grid-row: 3;"></div>
-                            </div>
-                            <!-- Face 4 -->
-                            <div class="face left">
-                                <div class="pip" style="grid-column: 1; grid-row: 1;"></div>
-                                <div class="pip" style="grid-column: 1; grid-row: 3;"></div>
-                                <div class="pip" style="grid-column: 3; grid-row: 1;"></div>
-                                <div class="pip" style="grid-column: 3; grid-row: 3;"></div>
-                            </div>
-                            <!-- Face 5 -->
-                            <div class="face top">
-                                <div class="pip" style="grid-column: 1; grid-row: 1;"></div>
-                                <div class="pip" style="grid-column: 1; grid-row: 3;"></div>
-                                <div class="pip" style="grid-column: 2; grid-row: 2;"></div>
-                                <div class="pip" style="grid-column: 3; grid-row: 1;"></div>
-                                <div class="pip" style="grid-column: 3; grid-row: 3;"></div>
-                            </div>
-                            <!-- Face 2 -->
-                            <div class="face bottom">
-                                <div class="pip" style="grid-column: 1; grid-row: 1;"></div>
-                                <div class="pip" style="grid-column: 3; grid-row: 3;"></div>
-                            </div>
-                        </div>
+        <div id="main-menu">
+            <div class="game-modes">
+                <div class="mode-card" onclick="showSetup('computer')">
+                    <div class="mode-icon">
+                        <i class="fas fa-robot"></i>
                     </div>
+                    <div class="mode-title">Play with Computer</div>
+                    <div class="mode-description">
+                        Challenge AI opponents with different difficulty levels. Perfect for practicing your strategy!
+                    </div>
+                    <button class="mode-button">Start Game</button>
                 </div>
 
-                <!-- Uncomment to drop a star right in the dead center: -->
-                <!-- <div class="center-icon">★</div> -->
+                <div class="mode-card" onclick="showSetup('friend')">
+                    <div class="mode-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="mode-title">Play with Friends</div>
+                    <div class="mode-description">
+                        Gather around and play with friends physically present. Classic local multiplayer fun!
+                    </div>
+                    <button class="mode-button">Start Game</button>
+                </div>
+
+                <div class="mode-card disabled">
+                    <div class="coming-soon">
+                        <i class="fas fa-clock"></i> Coming Soon
+                    </div>
+                    <div class="mode-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div class="mode-title">Play Online</div>
+                    <div class="mode-description">
+                        Join friends from anywhere in the world. Create or join rooms with unique room IDs.
+                    </div>
+                    <button class="mode-button disabled">Coming Soon</button>
+                </div>
             </div>
         </div>
 
-        
-    <div class="message-box" id="message-box">
-        <p id="message-text"></p>
-        <button id="message-button">OK</button>
+        <!-- Computer Setup Page -->
+        <div id="computer-setup" class="setup-page">
+            <div class="setup-header">
+                <button class="back-button" onclick="showMainMenu()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="setup-title">
+                    <i class="fas fa-robot"></i> Play with Computer
+                </div>
+            </div>
+
+            <div class="setup-section">
+                <div class="section-title">Number of Bot Players</div>
+                <div class="option-group">
+                    <button class="option-button selected" onclick="selectBotCount(1)" data-count="1">
+                        <i class="fas fa-user"></i> 1 Bot
+                    </button>
+                    <button class="option-button" onclick="selectBotCount(2)" data-count="2">
+                        <i class="fas fa-users"></i> 2 Bots
+                    </button>
+                    <button class="option-button" onclick="selectBotCount(3)" data-count="3">
+                        <i class="fas fa-users"></i> 3 Bots
+                    </button>
+                </div>
+            </div>
+
+            <div class="setup-section">
+                <div class="section-title">Bot Difficulty</div>
+                <div class="option-group">
+                    <div class="difficulty-option">
+                        <button class="option-button selected" onclick="selectDifficulty('beginner')" data-difficulty="beginner">
+                            <i class="fas fa-seedling"></i> Beginner
+                        </button>
+                        <div class="info-icon" onclick="toggleTooltip('beginner-tooltip')">
+                            <i class="fas fa-info"></i>
+                        </div>
+                        <div class="tooltip" id="beginner-tooltip">
+                            <strong>Beginner Bot:</strong><br>
+                            Makes random moves and selects pieces without strategic thinking. Great for casual play and beginners learning the game.
+                        </div>
+                    </div>
+                    <div class="difficulty-option">
+                        <button class="option-button" onclick="selectDifficulty('pro')" data-difficulty="pro">
+                            <i class="fas fa-crown"></i> Pro
+                        </button>
+                        <div class="info-icon" onclick="toggleTooltip('pro-tooltip')">
+                            <i class="fas fa-info"></i>
+                        </div>
+                        <div class="tooltip" id="pro-tooltip">
+                            <strong>Pro Bot:</strong><br>
+                            Uses advanced strategies, prioritizes safe moves, blocks opponents, and plans multiple moves ahead. Perfect for experienced players seeking a challenge.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="start-game-button" onclick="startComputerGame()">
+                <i class="fas fa-play"></i> Start Game
+            </button>
+        </div>
+
+        <!-- Friend Setup Page -->
+        <div id="friend-setup" class="setup-page">
+            <div class="setup-header">
+                <button class="back-button" onclick="showMainMenu()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="setup-title">
+                    <i class="fas fa-users"></i> Play with Friends
+                </div>
+            </div>
+
+            <div class="setup-section">
+                <div class="section-title">Number of Players</div>
+                <div class="option-group">
+                    <button class="option-button selected" onclick="selectPlayerCount(2)" data-players="2">
+                        <i class="fas fa-user-friends"></i> 2 Players
+                    </button>
+                    <button class="option-button" onclick="selectPlayerCount(3)" data-players="3">
+                        <i class="fas fa-users"></i> 3 Players
+                    </button>
+                    <button class="option-button" onclick="selectPlayerCount(4)" data-players="4">
+                        <i class="fas fa-users"></i> 4 Players
+                    </button>
+                </div>
+            </div>
+
+            <button class="start-game-button" onclick="startFriendGame()">
+                <i class="fas fa-play"></i> Start Game
+            </button>
+        </div>
     </div>
 
-    
+    <script>
+        let selectedBotCount = 1;
+        let selectedDifficulty = 'beginner';
+        let selectedPlayerCount = 2;
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                themeIcon.className = 'fas fa-moon';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'fas fa-sun';
+            }
+        }
+
+        function showSetup(mode) {
+            document.getElementById('main-menu').style.display = 'none';
+            document.getElementById(mode + '-setup').classList.add('active');
+        }
+
+        function showMainMenu() {
+            document.getElementById('main-menu').style.display = 'block';
+            document.querySelectorAll('.setup-page').forEach(page => {
+                page.classList.remove('active');
+            });
+            hideAllTooltips();
+        }
+
+        function selectBotCount(count) {
+            selectedBotCount = count;
+            document.querySelectorAll('[data-count]').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`[data-count="${count}"]`).classList.add('selected');
+        }
+
+        function selectDifficulty(difficulty) {
+            selectedDifficulty = difficulty;
+            document.querySelectorAll('[data-difficulty]').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`[data-difficulty="${difficulty}"]`).classList.add('selected');
+        }
+
+        function selectPlayerCount(count) {
+            selectedPlayerCount = count;
+            document.querySelectorAll('[data-players]').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`[data-players="${count}"]`).classList.add('selected');
+        }
+
+        function toggleTooltip(tooltipId) {
+            hideAllTooltips();
+            const tooltip = document.getElementById(tooltipId);
+            tooltip.classList.add('show');
+            
+            setTimeout(() => {
+                tooltip.classList.remove('show');
+            }, 3000);
+        }
+
+        function hideAllTooltips() {
+            document.querySelectorAll('.tooltip').forEach(tooltip => {
+                tooltip.classList.remove('show');
+            });
+        }
+
+        function startComputerGame() {
+            // alert(`Starting game with ${selectedBotCount} ${selectedDifficulty} bot(s)!`);
+            window.location.href = `./computer.html?mode=computer&bots=${selectedBotCount}&difficulty=${selectedDifficulty}`;
+        }
+
+        function startFriendGame() {
+            // alert(`Starting local game with ${selectedPlayerCount} players!`);
+            window.location.href = `./human.html?mode=local&players=${selectedPlayerCount}`;
+        }
+
+        // Hide tooltips when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.difficulty-option')) {
+                hideAllTooltips();
+            }
+        });
+    </script>
 </body>
 </html>

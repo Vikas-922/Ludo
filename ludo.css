@@ -3,7 +3,9 @@
 Variables & Root Settings
 ============================ */
 :root {
-    --bg-light: #f0f2f5;
+    --bg-light: #f0f2f5;    
+    --bg-primary: #f7fafa;
+    --bg-secondary: #dadada;
     --board-bg: #eee;
     --border-main: #333;
     --cell-border: #ccc;
@@ -17,18 +19,20 @@ Variables & Root Settings
     --color-yellow-light: #ffffaa;
     --color-blue: #0000cc;
     --color-blue-light: #aaaaff;
-    --piece-shadow: rgba(0, 0, 0, 0.2);
+    --piece-shadow: rgba(0, 0, 0, 0.2);    
+    --text-primary: #1e293b;    
     --transition-speed: 0.2s;
 }
 
 /* General body styling */
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100dvh;
-    background-color: var(--bg-light);
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    color: var(--text-primary);
     margin: 0;
     padding: 20px;
     box-sizing: border-box;
@@ -42,7 +46,7 @@ Game Container
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #fff;
+    background-color: var(--bg-primary);
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     padding: 30px;

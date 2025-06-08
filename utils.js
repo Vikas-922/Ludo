@@ -1,6 +1,10 @@
-import {setSelectedPiece, diceValue, currentDifficulty, AI_DIFFICULTY } from './computer.js';
-import { fullPaths, players, selectedPiece, movePiece } from './computer.js';
+import {setSelectedPiece, diceValue, currentDifficulty, AI_DIFFICULTY, 
+     fullPaths, players, selectedPiece, movePiece, pieceSize 
+} from './computer.js';
 
+
+
+const dice = document.getElementById('dice'); // Assuming dice is a global element
 
 /**
  * Handles computer player move selection using AI strategy
@@ -347,4 +351,96 @@ function restartAudio(audio, fromTime = 0) {
 }
 
 
-export {handleComputerMove, restartAudio}
+
+async function animatePieceToCell(piece, targetCell, duration = 200) {
+  dice.style.pointerEvents = 'none'; 
+//   const startCell = piece.parentElement;
+  const pieceRect = piece.getBoundingClientRect();
+  const targetRect = targetCell.getBoundingClientRect();
+
+  const dx = targetRect.left - pieceRect.left;
+  const dy = targetRect.top - pieceRect.top;
+
+  // Set position absolute (if not already)
+  piece.style.position = 'absolute';
+  piece.style.pointerEvents = 'none'; // Prevent click during animation
+  piece.style.zIndex = 1000;
+  piece.style.transition = `transform ${duration}ms ease`;
+
+  piece.style.transform = `translate(${dx}px, ${dy}px)`;
+
+  await new Promise(resolve => setTimeout(resolve, duration));
+
+  // Reset transform and move DOM element
+  piece.style.transition = 'none';
+  piece.style.transform = 'none';
+  piece.style.pointerEvents = '';
+  piece.style.zIndex = '';
+
+  targetCell.appendChild(piece);
+//   piece.style.position = 'relative';
+  piece.style.left = 'unset';
+  piece.style.top = 'unset';
+
+}
+
+
+
+function arrangePiecesInCell(cell) {
+  const pieces = cell.querySelectorAll('.piece'); // Make sure each piece has class="piece"
+  const total = pieces.length;
+  const radius = 8; // You can tweak this to control spacing
+
+//   console.log('total', total);
+//   console.log("piecesize", pieceSize);
+
+  if (total === 1) {
+    pieces[0].style.left = 'unset';
+    pieces[0].style.top = 'unset';
+    pieces[0].style.transform = 'none';
+    pieces[0].style.width = `${pieceSize}px`;
+    pieces[0].style.height = `${pieceSize}px`;
+    pieces[0].style.zIndex = 2;
+    return;
+  }
+
+  let zIndex = 2; 
+  pieces.forEach((p, index) => {
+    const angle = (index / total) * (2 * Math.PI);
+    const offsetX = Math.cos(angle) * radius;
+    const offsetY = Math.sin(angle) * radius;
+
+    p.style.position = 'absolute';
+    p.style.width = '20px'; 
+    p.style.height = '20px';
+    p.style.left = `calc(50% + ${offsetX}px)`;
+    p.style.top = `calc(50% + ${offsetY}px)`;
+    p.style.transform = 'translate(-50%, -50%)'; // Center the piece
+    p.style.zIndex = zIndex++;
+  });
+}
+
+
+
+async function animatePieceMovementToTargetIndex(piece,pathArray, fromIndex, toIndex) {
+    const startCell = document.getElementById(pathArray[fromIndex]);
+    const targetCell = document.getElementById(pathArray[toIndex]);
+    dice.style.pointerEvents = 'none'; 
+    for (let i = fromIndex + 1; i <= toIndex; i++) {
+        const cellId = pathArray[i];
+        const cell = document.getElementById(cellId);
+        if (!cell) {
+            console.error(`Cell ${cellId} not found during animation.`);
+            showMessage("Error: Path animation failed.");
+            return;
+        }
+
+        await animatePieceToCell(piece, cell); // Animate to next step
+    }
+
+    arrangePiecesInCell(startCell);
+    arrangePiecesInCell(targetCell);
+}
+
+
+export {handleComputerMove, restartAudio, animatePieceToCell, arrangePiecesInCell, animatePieceMovementToTargetIndex}

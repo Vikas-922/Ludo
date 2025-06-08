@@ -1,4 +1,6 @@
-import {handleComputerMove, restartAudio} from './utils.js'; // Import computer player logic
+import {handleComputerMove, restartAudio, animatePieceMovementToTargetIndex,
+    animatePieceToCell, arrangePiecesInCell
+} from './utils.js'; // Import computer player logic
 
 // Game state variables
 const board = document.getElementById('ludo-board');
@@ -624,14 +626,13 @@ async function resetTurn() {
     if (diceValue !== 6) { // If not a 6, switch turn
         await nextTurn();
         return;
-    } else {
-        // showMessage(`${currentTurn.toUpperCase()} rolled a 6! Roll again!`);
     }
     diceValue = 0; // Reset dice value
 
+    // If it's a computer player's turn, roll the dice automatically
     if (computerPlayers[currentTurn]) {
         // console.log(` It's ${currentTurn.toUpperCase()}'s turn! Rolling dice...  == ${dice.style.pointerEvents === "none"}`, );
-
+        dice.style.pointerEvents = 'none'; // Disable dice to prevent manual clicks during computer turn
         setTimeout(async () => {
             // if (dice.style.pointerEvents === "none") {
                await diceRollAnimation();
@@ -672,12 +673,9 @@ async function nextTurn() {
     
     if (computerPlayers[currentTurn]) {
         // console.log(` It's ${currentTurn.toUpperCase()}'s turn! Rolling dice...  == ${dice.style.pointerEvents === "none"}`, );
-
-        // setTimeout(() => {
-            // if (dice.style.pointerEvents === "none") {
-               await diceRollAnimation();
-            // }
-        // }, 400);
+        dice.style.pointerEvents = 'none'; // Disable dice to prevent manual clicks during computer turn
+        await diceRollAnimation();
+           
     }
     
 }
@@ -703,97 +701,6 @@ window.onload = async function() {
 
 ///////////====================================================================
 
-async function animatePieceToCell(piece, targetCell, duration = 200) {
-  dice.style.pointerEvents = 'none'; 
-//   const startCell = piece.parentElement;
-  const pieceRect = piece.getBoundingClientRect();
-  const targetRect = targetCell.getBoundingClientRect();
-
-  const dx = targetRect.left - pieceRect.left;
-  const dy = targetRect.top - pieceRect.top;
-
-  // Set position absolute (if not already)
-  piece.style.position = 'absolute';
-  piece.style.pointerEvents = 'none'; // Prevent click during animation
-  piece.style.zIndex = 1000;
-  piece.style.transition = `transform ${duration}ms ease`;
-
-  piece.style.transform = `translate(${dx}px, ${dy}px)`;
-
-  await new Promise(resolve => setTimeout(resolve, duration));
-
-  // Reset transform and move DOM element
-  piece.style.transition = 'none';
-  piece.style.transform = 'none';
-  piece.style.pointerEvents = '';
-  piece.style.zIndex = '';
-
-  targetCell.appendChild(piece);
-//   piece.style.position = 'relative';
-  piece.style.left = 'unset';
-  piece.style.top = 'unset';
-
-}
-
-
-
-function arrangePiecesInCell(cell) {
-  const pieces = cell.querySelectorAll('.piece'); // Make sure each piece has class="piece"
-  const total = pieces.length;
-  const radius = 8; // You can tweak this to control spacing
-
-//   console.log('total', total);
-//   console.log("piecesize", pieceSize);
-
-  if (total === 1) {
-    pieces[0].style.left = 'unset';
-    pieces[0].style.top = 'unset';
-    pieces[0].style.transform = 'none';
-    pieces[0].style.width = `${pieceSize}px`;
-    pieces[0].style.height = `${pieceSize}px`;
-    pieces[0].style.zIndex = 2;
-    return;
-  }
-
-  let zIndex = 2; 
-  pieces.forEach((p, index) => {
-    const angle = (index / total) * (2 * Math.PI);
-    const offsetX = Math.cos(angle) * radius;
-    const offsetY = Math.sin(angle) * radius;
-
-    p.style.position = 'absolute';
-    p.style.width = '20px'; 
-    p.style.height = '20px';
-    p.style.left = `calc(50% + ${offsetX}px)`;
-    p.style.top = `calc(50% + ${offsetY}px)`;
-    p.style.transform = 'translate(-50%, -50%)'; // Center the piece
-    p.style.zIndex = zIndex++;
-  });
-}
-
-
-
-async function animatePieceMovementToTargetIndex(piece,pathArray, fromIndex, toIndex) {
-    const startCell = document.getElementById(pathArray[fromIndex]);
-    const targetCell = document.getElementById(pathArray[toIndex]);
-    dice.style.pointerEvents = 'none'; 
-  for (let i = fromIndex + 1; i <= toIndex; i++) {
-    const cellId = pathArray[i];
-    const cell = document.getElementById(cellId);
-    if (!cell) {
-      console.error(`Cell ${cellId} not found during animation.`);
-      showMessage("Error: Path animation failed.");
-      return;
-    }
-
-    await animatePieceToCell(piece, cell); // Animate to next step
-  }
-
-  
-  arrangePiecesInCell(startCell);
-  arrangePiecesInCell(targetCell);
-}
-
 
 function setSelectedPiece(piece) {
     selectedPiece = piece;
@@ -804,5 +711,5 @@ function setSelectedPiece(piece) {
 
 export {
    setSelectedPiece, diceValue, currentDifficulty, AI_DIFFICULTY,
-   fullPaths, players, selectedPiece, movePiece
+   fullPaths, players, selectedPiece, movePiece, pieceSize
 };

@@ -10,7 +10,6 @@ const dice = document.getElementById('dice'); // Assuming dice is a global eleme
  * Handles computer player move selection using AI strategy
  */
 async function handleComputerMove(playablePieces) {
-    // Add thinking delay for realism
     if (playablePieces.length === 0) {
         // console.log("No playable pieces available for computer.");
         return;
@@ -443,4 +442,61 @@ async function animatePieceMovementToTargetIndex(piece,pathArray, fromIndex, toI
 }
 
 
-export {handleComputerMove, restartAudio, animatePieceToCell, arrangePiecesInCell, animatePieceMovementToTargetIndex}
+const homeRed = document.getElementsByClassName('home-red'); // Assuming this is the red home element
+const homeBlue = document.getElementsByClassName('home-blue'); // Assuming this is the blue home element
+const homeGreen = document.getElementsByClassName('home-green'); // Assuming this is the green home element
+const homeYellow = document.getElementsByClassName('home-yellow'); // Assuming this is the yellow home element
+
+// To start the heartbeat
+function startHeartbeat(color) {
+    console.log("==> Starting heartbeat for color:", color);
+    
+    if (color === 'blue') {
+        homeBlue[0].classList.add('heartbeat');
+    }
+    else if (color === 'green') {
+        homeGreen[0].classList.add('heartbeat');
+    }
+    else if (color === 'yellow') {
+        homeYellow[0].classList.add('heartbeat');
+    }
+    else if (color === 'red') {
+        console.log("==> Starting heartbeat for red home", homeRed[0]);
+        
+        homeRed[0].classList.add('heartbeat'); // Remove heartbeat from others
+    }
+}
+
+// To stop the heartbeat
+function stopHeartbeat(color) {
+  if (color === 'blue') {
+    homeBlue[0].classList.remove('heartbeat');
+  }
+  else if (color === 'green') {
+    homeGreen[0].classList.remove('heartbeat');
+  }
+  else if (color === 'yellow') {
+    homeYellow[0].classList.remove('heartbeat');
+  }
+  else if (color === 'red') {
+    homeRed[0].classList.remove('heartbeat');
+  }
+}
+
+const diceFaces = document.getElementsByClassName('face'); // Assuming dice faces have this class
+function changeDiceColor(color) {
+    for (let i = 0; i < diceFaces.length; i++) {
+        diceFaces[i].classList.remove('red', 'green', 'yellow', 'blue');
+        diceFaces[i].classList.add(color);
+    }
+}
+
+export {handleComputerMove, 
+    restartAudio,
+    animatePieceToCell,
+    arrangePiecesInCell,
+    animatePieceMovementToTargetIndex,
+    startHeartbeat,
+    stopHeartbeat,
+    changeDiceColor
+}

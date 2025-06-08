@@ -1,5 +1,6 @@
 import {handleComputerMove, restartAudio, animatePieceMovementToTargetIndex,
-    animatePieceToCell, arrangePiecesInCell
+    animatePieceToCell, arrangePiecesInCell, startHeartbeat,
+    stopHeartbeat, changeDiceColor,
 } from './utils.js'; // Import computer player logic
 
 // Game state variables
@@ -103,7 +104,7 @@ const computerPlayers = {
     yellow: true,  // Set to true to make yellow a computer player
     blue: true,    // Set to true to make blue a computer player
     green: true,    // Set to true to make green a computer player
-    red: false
+    red: true
     // red is assumed to be human player
 };
 
@@ -114,7 +115,7 @@ const AI_DIFFICULTY = {
     HARD: 3
 };
 
-const currentDifficulty = AI_DIFFICULTY.EASY;
+const currentDifficulty = AI_DIFFICULTY.MEDIUM;
 
 
 
@@ -401,11 +402,13 @@ async function rollDice() {
         const currentPathIndex = parseInt(piece.dataset.pathIndex);
         // Simplified check: if on common path, it can move. More complex logic is in movePiece.
         // This part just determines if *any* piece is movable.
-        if (currentPathIndex !== -1) { // If it's on the path (not home)
+        if (currentPathIndex !== -1 && (currentPathIndex + diceValue) < fullPaths[currentPlayer.color].length) { // If it's on the path (not home)
             playablePieces.push(piece);
         }
     });
-    
+    console.log("Current path length:", fullPaths[currentPlayer.color].length);
+
+
     // If no playable pieces, end turn
     if (playablePieces.length === 0) {
         dice.style.pointerEvents = 'auto';
@@ -414,6 +417,7 @@ async function rollDice() {
         // Highlight playable pieces
         playablePieces.forEach(piece => piece.classList.add('selected'));
     }
+
 
     
 
@@ -510,10 +514,7 @@ async function movePiece(piece, steps) {
   // (1) Overshoot: if newIndex > finishIndex, invalid:
   if (newIndex > finishIndex) {
     // showMessage("Cannot move: Overshot the finish. Try again.");
-
-    // dice.style.pointerEvents = 'auto';
     await resetTurn();
-    // deselectPiece();
     return;
   }
 
@@ -657,6 +658,7 @@ function deselectPiece() {
  * Switches to the next player's turn.
  */
 async function nextTurn() {
+    stopHeartbeat(currentTurn); 
 
     await sleep(500);
     const playerColors = ['red', 'yellow', 'blue', 'green'];
@@ -666,11 +668,12 @@ async function nextTurn() {
     currentPlayerDisplay.textContent = currentTurn;
     currentPlayerDisplay.className = ''; // Clear previous color class
     currentPlayerDisplay.classList.add(`${currentTurn}-turn`);
-    // showMessage(`It's ${currentTurn.toUpperCase()}'s turn!`);
+    startHeartbeat(currentTurn); 
+    changeDiceColor(currentTurn);
 
-    // Auto-roll for computer players after a short delay
     // console.log(` Inside nextTurn ,,, It's ${currentTurn.toUpperCase()}'s turn!  ${dice.style.pointerEvents === "none"}`, );
     
+    // Auto-roll for computer players 
     if (computerPlayers[currentTurn]) {
         // console.log(` It's ${currentTurn.toUpperCase()}'s turn! Rolling dice...  == ${dice.style.pointerEvents === "none"}`, );
         dice.style.pointerEvents = 'none'; // Disable dice to prevent manual clicks during computer turn

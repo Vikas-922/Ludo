@@ -107,30 +107,99 @@ Home Areas (4 Corners)
 }
 
 /* Specific Home Positions */
-.home-red {
-    grid-column: 1 / span 6;
-    grid-row: 1 / span 6;
-    background-color: #ffcccc;
-    border-color: var(--color-red);
-}
-.home-green {
-    grid-column: 10 / span 6;
-    grid-row: 1 / span 6;
-    background-color: #ccffcc;
-    border-color: var(--color-green);
-}
-.home-yellow {
-    grid-column: 1 / span 6;
-    grid-row: 10 / span 6;
-    background-color: #ffffcc;
-    border-color: var(--color-yellow);
-}
+/* ====== Common Home Style ====== */
+.home-red,
+.home-green,
+.home-yellow,
 .home-blue {
-    grid-column: 10 / span 6;
-    grid-row: 10 / span 6;
-    background-color: #cceeff;
-    border-color: var(--color-blue);
+  transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
+
+/* ====== Red Home ====== */
+.home-red {
+  grid-column: 1 / span 6;
+  grid-row: 1 / span 6;
+  background-color: #ffcccc;
+  border-color: var(--color-red);
+}
+.home-red.heartbeat {
+  animation: heartbeat-red 1.5s ease-in-out infinite;
+}
+@keyframes heartbeat-red {
+  0%, 100% {
+    background-color: #ffcccc;
+    box-shadow: 0 0 3px 0px #ff9999;
+  }
+  50% {
+    background-color: #ffb5b5;
+    box-shadow: 0 0 10px 2px #ff6666;
+  }
+}
+
+/* ====== Green Home ====== */
+.home-green {
+  grid-column: 10 / span 6;
+  grid-row: 1 / span 6;
+  background-color: #ccffcc;
+  border-color: var(--color-green);
+}
+.home-green.heartbeat {
+  animation: heartbeat-green 1.5s ease-in-out infinite;
+}
+@keyframes heartbeat-green {
+  0%, 100% {
+    background-color: #ccffcc;
+    box-shadow: 0 0 3px 0px #99ff99;
+  }
+  50% {
+    background-color: #a3ffa3;
+    box-shadow: 0 0 10px 2px #66cc66;
+  }
+}
+
+/* ====== Yellow Home ====== */
+.home-yellow {
+  grid-column: 1 / span 6;
+  grid-row: 10 / span 6;
+  background-color: #ffffcc;
+  border-color: var(--color-yellow);
+}
+.home-yellow.heartbeat {
+  animation: heartbeat-yellow 1.5s ease-in-out infinite;
+}
+@keyframes heartbeat-yellow {
+  0%, 100% {
+    background-color: #ffffcc;
+    box-shadow: 0 0 3px 0px #ffff99;
+  }
+  50% {
+    background-color: #ffffab;
+    box-shadow: 0 0 10px 2px #cccc66;
+  }
+}
+
+/* ====== Blue Home ====== */
+.home-blue {
+  grid-column: 10 / span 6;
+  grid-row: 10 / span 6;
+  background-color: #cceeff;
+  border-color: var(--color-blue);
+}
+.home-blue.heartbeat {
+  animation: heartbeat-blue 1.5s ease-in-out infinite;
+}
+@keyframes heartbeat-blue {
+  0%, 100% {
+    background-color: #cceeff;
+    box-shadow: 0 0 3px 0px #99ddff;
+  }
+  50% {
+    background-color: #a7e2ff;
+    box-shadow: 0 0 10px 2px #66bbdd;
+  }
+}
+/* ========================
+
 
 /* Home Circles */
 .home-circle {
@@ -370,6 +439,19 @@ Dice & Controls Area
   grid-template-rows: repeat(3, 1fr);
   padding: var(--padding-size);
   box-sizing: border-box;
+}
+
+.face.red{
+    background: #ffbda3;
+}
+.face.green{
+    background: rgb(163, 255, 163);
+}
+.face.yellow{
+    background: rgb(255, 255, 163);
+}
+.face.blue{
+    background: rgb(163, 237, 255);
 }
 
 .pip {

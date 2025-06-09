@@ -72,7 +72,7 @@ const players = {
 
 const playerColorsInGame = ["yellow", "blue", "green", "red"]; // Sequence of players in the game
 
-console.log("Bots:", bots, "Difficulty:", difficulty);
+// console.log("Bots:", bots, "Difficulty:", difficulty);
 
 switch (bots) {
     case "2":
@@ -243,7 +243,7 @@ function initializeBoard() {
  */
 function createPieces() {
     for (const playerColor of playerColorsInGame) {
-        console.log(`Creating pieces for player: ${playerColor}`);
+        // console.log(`Creating pieces for player: ${playerColor}`);
         
         const player = players[playerColor];
         for (let i = 0; i < 4; i++) {
@@ -425,7 +425,7 @@ async function rollDice() {
             playablePieces.push(piece);
         }
     });
-    console.log("Current path length:", fullPaths[currentPlayer.color].length);
+    // console.log("Current path length:", fullPaths[currentPlayer.color].length);
 
 
     // If no playable pieces, end turn
@@ -490,6 +490,7 @@ function handlePieceClick(event) {
  * @param {HTMLElement} piece - The piece element to move.
  * @param {number} steps - The number of steps to move.
  */
+let isEnteredFinishZone = false; 
 async function movePiece(piece, steps) {    
   const player = players[currentTurn];
   const color  = player.color;    // e.g. 'red'
@@ -543,6 +544,8 @@ async function movePiece(piece, steps) {
       deselectPiece();
       return;
     }
+
+    isEnteredFinishZone = true;
     // finishCell.appendChild(piece);
     await animatePieceMovementToTargetIndex(piece, pathArray, currentIndex, newIndex);
 
@@ -582,6 +585,7 @@ async function movePiece(piece, steps) {
  * Checks if the moved piece has landed on an opponent's piece and kills it.
  * @param {HTMLElement} movedPiece - The piece that just moved.
  */
+let iskilledOtherPlayer = false; 
 async function checkAndKillOpponent(movedPiece) {
     const currentCell = movedPiece.parentNode;
     const movedPiecePlayer = movedPiece.dataset.player;
@@ -599,6 +603,7 @@ async function checkAndKillOpponent(movedPiece) {
             const opponentPlayer = players[piece.dataset.player];
             const pieceId = piece.dataset.pieceId;
             const pieceNumber = parseInt(pieceId.split('-')[1]);
+            iskilledOtherPlayer = true; // Set flag for killed piece
 
             // Move piece back to its home circle
             const homeCircle = document.getElementById(opponentPlayer.homeCircles[pieceNumber - 1]);
@@ -617,6 +622,7 @@ async function checkAndKillOpponent(movedPiece) {
     }));
 
     arrangePiecesInCell(currentCell); // Re-arrange pieces in the current cell
+    
 }
 
 /**
@@ -632,6 +638,11 @@ function checkWinCondition() {
     }
 }
 
+function resetSpecialFlags() {
+    isEnteredFinishZone = false; // Reset finish zone flag
+    iskilledOtherPlayer = false; // Reset killed opponent flag
+}
+
 /**
  * Resets the turn after a piece has been moved or no valid moves exist.
  */
@@ -639,12 +650,14 @@ async function resetTurn() {
     deselectPiece(); // Deselect any active piece
     
     dice.style.pointerEvents = 'auto'; // Enable dice for next roll
-    
-    if (diceValue !== 6) { // If not a 6, switch turn
+    diceValue = 0; // Reset dice value
+
+    if (diceValue !== 6 && !isEnteredFinishZone && !iskilledOtherPlayer) { 
+        resetSpecialFlags(); 
         await nextTurn();
         return;
     }
-    diceValue = 0; // Reset dice value
+    resetSpecialFlags(); 
 
     // If it's a computer player's turn, roll the dice automatically
     if (computerPlayers[currentTurn]) {

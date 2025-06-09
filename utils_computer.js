@@ -15,7 +15,7 @@ async function handleComputerMove(playablePieces,currentDifficulty) {
         return;
     }
 
-    console.log("Computer is thinking... playablePieces:", playablePieces);
+    // console.log("Computer is thinking... playablePieces:", playablePieces);
     await new Promise(resolve => setTimeout(resolve, 400 + parseInt(Math.random() * 300)));
         
     let bestPiece; //
@@ -34,7 +34,7 @@ async function handleComputerMove(playablePieces,currentDifficulty) {
             bestPiece = selectBestMove(playablePieces);
     }
     
-    console.log("Computer thinking done, selecting piece...");
+    // console.log("Computer thinking done, selecting piece...");
 
     // Highlight selected piece briefly
     bestPiece.classList.add('selected');
@@ -98,6 +98,8 @@ function selectBestMove(playablePieces) {
     
     for (const piece of playablePieces) {
         const score = evaluateMoveScore(piece, diceValue);
+        console.log(" @@@ score ", piece.dataset.pieceId, ":", score);
+
         if (score > bestScore) {
             bestScore = score;
             bestMove = piece;
@@ -108,7 +110,8 @@ function selectBestMove(playablePieces) {
 }
 
 /**
- * Evaluates the score of a potential move
+ * Evaluates the score of a potential move for each piece
+ * considering multiple factors like finishing, killing opponents, safety, and progress.
  */
 function evaluateMoveScore(piece, steps) {
     let score = 0;
@@ -168,8 +171,8 @@ function evaluateMoveScore(piece, steps) {
     score += positionScore;
     
     // Priority 7: Blocking opponents
-    const blockingScore = evaluateBlocking(targetPosition, color);
-    score += blockingScore;
+    // const blockingScore = evaluateBlocking(targetPosition, color);
+    // score += blockingScore;
     
     return score;
 }
@@ -233,17 +236,55 @@ function evaluateProgress(currentIndex, newIndex, finishIndex) {
  */
 function evaluatePosition(index, color) {
     // Bonus for reaching certain strategic positions
-    const strategicPositions = {
-        13: 20,  // First safe square
-        26: 30,  // Middle safe square
-        39: 40,  // Late safe square
-        47: 50   // Final safe square before home stretch
+    // const strategicPositions = {
+    //     13: 20,  // First safe square
+    //     26: 30,  // Middle safe square
+    //     39: 40,  // Late safe square
+    //     47: 50   // Final safe square before home stretch
+    // };
+     const strategicPositions = {
+        "red": {
+            "cell-3-7": 20,  
+            "cell-2-9": 30,  
+            "cell-7-13": 40,  
+            "cell-9-14": 50 ,
+            "cell-13-9": 60, 
+            "cell-14-7": 70, 
+            "cell-9-3": 80,
+        },
+        "yellow": {
+            "cell-9-3": 20,  
+            "cell-7-2": 30,  
+            "cell-3-7": 40,  
+            "cell-2-9": 50 ,
+            "cell-7-13": 60, 
+            "cell-9-14": 70, 
+            "cell-13-9": 80,
+        },
+        "blue": {
+            "cell-13-9": 20,  
+            "cell-14-7": 30,  
+            "cell-9-3": 40,  
+            "cell-7-2": 50 ,
+            "cell-3-7": 60, 
+            "cell-2-9": 70, 
+            "cell-7-13": 80,
+        },
+        "green": {
+            "cell-7-13": 20,  
+            "cell-9-14": 30,  
+            "cell-13-9": 40,  
+            "cell-14-7": 50 ,
+            "cell-9-3": 60, 
+            "cell-7-2": 70, 
+            "cell-3-7": 80,
+        }
     };
     
     const pathArray = fullPaths[color];
     const position = pathArray[index];
-    
-    return strategicPositions[position] || 0;
+
+    return strategicPositions[color][position] || 0;
 }
 
 /**
@@ -452,8 +493,6 @@ const homeYellow = document.getElementsByClassName('home-yellow'); // Assuming t
 
 // To start the heartbeat
 function startHeartbeat(color) {
-    console.log("==> Starting heartbeat for color:", color);
-    
     if (color === 'blue') {
         homeBlue[0].classList.add('heartbeat');
     }
@@ -464,8 +503,6 @@ function startHeartbeat(color) {
         homeYellow[0].classList.add('heartbeat');
     }
     else if (color === 'red') {
-        console.log("==> Starting heartbeat for red home", homeRed[0]);
-        
         homeRed[0].classList.add('heartbeat'); // Remove heartbeat from others
     }
 }

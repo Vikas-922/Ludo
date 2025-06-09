@@ -444,6 +444,7 @@ function handlePieceClick(event) {
  * @param {HTMLElement} piece - The piece element to move.
  * @param {number} steps - The number of steps to move.
  */
+let isEnteredFinishZone = false; 
 async function movePiece(piece, steps) {    
   const player = players[currentTurn];
   const color  = player.color;    // e.g. 'red'
@@ -497,6 +498,8 @@ async function movePiece(piece, steps) {
       deselectPiece();
       return;
     }
+    
+    isEnteredFinishZone = true;
     // finishCell.appendChild(piece);
     await animatePieceMovementToTargetIndex(piece, pathArray, currentIndex, newIndex);
 
@@ -536,6 +539,7 @@ async function movePiece(piece, steps) {
  * Checks if the moved piece has landed on an opponent's piece and kills it.
  * @param {HTMLElement} movedPiece - The piece that just moved.
  */
+let iskilledOtherPlayer = false; 
 async function checkAndKillOpponent(movedPiece) {
     const currentCell = movedPiece.parentNode;
     const movedPiecePlayer = movedPiece.dataset.player;
@@ -553,6 +557,7 @@ async function checkAndKillOpponent(movedPiece) {
             const opponentPlayer = players[piece.dataset.player];
             const pieceId = piece.dataset.pieceId;
             const pieceNumber = parseInt(pieceId.split('-')[1]);
+            iskilledOtherPlayer = true; // Set flag for killed piece
 
             // Move piece back to its home circle
             const homeCircle = document.getElementById(opponentPlayer.homeCircles[pieceNumber - 1]);
@@ -594,12 +599,14 @@ function resetTurn() {
     
     dice.style.pointerEvents = 'auto'; // Enable dice for next roll
     
-    if (diceValue !== 6) { // If not a 6, switch turn
+    if (diceValue !== 6 && !isEnteredFinishZone && !iskilledOtherPlayer) { // If not a 6, switch turn
+        resetSpecialFlags(); 
         nextTurn();
     } else {
         // showMessage(`${currentTurn.toUpperCase()} rolled a 6! Roll again!`);
     }
     diceValue = 0; // Reset dice value
+    resetSpecialFlags(); 
 }
 
 /**

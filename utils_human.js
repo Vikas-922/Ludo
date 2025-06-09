@@ -147,8 +147,10 @@ function changeDiceColor(color) {
     }
 }
 
-
+function roundoff(size) {
+    return Math.round(parseFloat(size));
+}
 
 export { animatePieceToCell, arrangePiecesInCell, animatePieceMovementToTargetIndex, 
-    restartAudio, startHeartbeat, stopHeartbeat, changeDiceColor
+    restartAudio, startHeartbeat, stopHeartbeat, changeDiceColor, roundoff
 };

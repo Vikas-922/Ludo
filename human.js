@@ -1,8 +1,14 @@
 import { arrangePiecesInCell, animatePieceMovementToTargetIndex,
     animatePieceToCell,restartAudio, startHeartbeat, 
-    stopHeartbeat, changeDiceColor,
+    stopHeartbeat, changeDiceColor, roundoff,
  } from "./utils_human.js";
-
+ 
+ 
+ 
+ function onGameStart() {
+     const piece = document.querySelector('.piece');
+     pieceSize = roundoff(getComputedStyle(piece).width); // e.g., "26px"
+ }
 
 
 // Game state variables
@@ -15,15 +21,10 @@ const messageButton = document.getElementById('message-button');
 const diceRollingAudio = new Audio('media/sounds/Rolling_1s.mp3'); // Sound for dice rolling
 let pieceSize = 20; // Size of a piece for positioning
 
+const params = new URLSearchParams(window.location.search);
+const playersCount = params.get("players");
 
-function onGameStart() {
-    const piece = document.querySelector('.piece');
-    pieceSize = roundoff(getComputedStyle(piece).width); // e.g., "26px"
-}
 
-function roundoff(size) {
-    return Math.round(parseFloat(size));
-}
 
 // Define player colors and their starting/path/home positions
 const players = {
@@ -64,6 +65,19 @@ const players = {
         finishCell: 'cell-8-9'
     }
 };
+
+const playerColorsInGame = ["yellow", "blue", "green", "red"]; // Sequence of players in the game
+
+switch (playersCount) {
+    case "3":
+        playerColorsInGame.splice(playerColorsInGame.indexOf("red"), 1);
+        break;
+
+    case "2":
+        playerColorsInGame.splice(playerColorsInGame.indexOf("red"), 1);
+        playerColorsInGame.splice(playerColorsInGame.indexOf("blue"), 1);
+        break;
+}
 
 let currentTurn = 'red';
 let diceValue = 0;
@@ -199,7 +213,7 @@ function initializeBoard() {
  * Creates and places player pieces on their respective home circles.
  */
 function createPieces() {
-    for (const playerColor in players) {
+    for (const playerColor of playerColorsInGame) {
         const player = players[playerColor];
         for (let i = 0; i < 4; i++) {
             const piece = document.createElement('div');
@@ -604,12 +618,11 @@ function deselectPiece() {
  * Switches to the next player's turn.
  */
 function nextTurn() {
-    stopHeartbeat(currentTurn);
+    stopHeartbeat(currentTurn);    
+    // const playerColorsInGame = ['yellow', 'blue', 'green','red'];
     
-    const playerColors = ['red', 'yellow', 'blue', 'green'];
-    
-    const currentIndex = playerColors.indexOf(currentTurn);
-    currentTurn = playerColors[(currentIndex + 1) % playerColors.length];
+    const currentIndex = playerColorsInGame.indexOf(currentTurn);
+    currentTurn = playerColorsInGame[(currentIndex + 1) % playerColorsInGame.length];
     // currentPlayerDisplay.textContent = currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1);
     currentPlayerDisplay.textContent = currentTurn;
     currentPlayerDisplay.className = ''; // Clear previous color class

@@ -1,4 +1,4 @@
-import {setSelectedPiece, diceValue, currentDifficulty, AI_DIFFICULTY, 
+import {setSelectedPiece, diceValue, AI_DIFFICULTY, 
      fullPaths, players, selectedPiece, movePiece, pieceSize 
 } from './computer.js';
 
@@ -9,7 +9,7 @@ const dice = document.getElementById('dice'); // Assuming dice is a global eleme
 /**
  * Handles computer player move selection using AI strategy
  */
-async function handleComputerMove(playablePieces) {
+async function handleComputerMove(playablePieces,currentDifficulty) {
     if (playablePieces.length === 0) {
         // console.log("No playable pieces available for computer.");
         return;
@@ -494,6 +494,11 @@ function changeDiceColor(color) {
     }
 }
 
+
+function roundoff(size) {
+    return Math.round(parseFloat(size));
+}
+
 export {handleComputerMove, 
     restartAudio,
     animatePieceToCell,
@@ -503,4 +508,5 @@ export {handleComputerMove,
     stopHeartbeat,
     changeDiceColor,
     sleep,
+    roundoff
 }

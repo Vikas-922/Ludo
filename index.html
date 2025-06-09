@@ -82,7 +82,7 @@
                         <i class="fas fa-user"></i> 1 Bot
                     </button>
                     <button class="option-button" onclick="selectBotCount(2)" data-count="2">
-                        <i class="fas fa-users"></i> 2 Bots
+                        <i class="fas fa-user-friends"></i> 2 Bots
                     </button>
                     <button class="option-button" onclick="selectBotCount(3)" data-count="3">
                         <i class="fas fa-users"></i> 3 Bots
@@ -94,7 +94,7 @@
                 <div class="section-title">Bot Difficulty</div>
                 <div class="option-group">
                     <div class="difficulty-option">
-                        <button class="option-button selected" onclick="selectDifficulty('beginner')" data-difficulty="beginner">
+                        <button class="option-button selected" onclick="selectDifficulty('EASY')" data-difficulty="EASY">
                             <i class="fas fa-seedling"></i> Beginner
                         </button>
                         <div class="info-icon" onclick="toggleTooltip('beginner-tooltip')">
@@ -106,7 +106,7 @@
                         </div>
                     </div>
                     <div class="difficulty-option">
-                        <button class="option-button" onclick="selectDifficulty('pro')" data-difficulty="pro">
+                        <button class="option-button" onclick="selectDifficulty('HARD')" data-difficulty="HARD">
                             <i class="fas fa-crown"></i> Pro
                         </button>
                         <div class="info-icon" onclick="toggleTooltip('pro-tooltip')">
@@ -159,7 +159,7 @@
 
     <script>
         let selectedBotCount = 1;
-        let selectedDifficulty = 'beginner';
+        let selectedDifficulty = 'EASY';
         let selectedPlayerCount = 2;
 
         function toggleTheme() {

@@ -19,6 +19,7 @@ Variables & Root Settings
     --color-yellow-light: #ffffaa;
     --color-blue: #0000cc;
     --color-blue-light: #aaaaff;
+    --game-container-color: #8483ff;
     --piece-shadow: rgba(0, 0, 0, 0.2);    
     --text-primary: #1e293b;    
     --transition-speed: 0.2s;
@@ -46,7 +47,7 @@ Game Container
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: var(--bg-primary);
+    background-color: var(--game-container-color);
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     padding: 30px;
@@ -483,7 +484,7 @@ Current Player Display
     font-weight: bold;
     margin-bottom: 20px;
     text-align: center;
-    color: #333;
+    color: #000000;
 }
 .current-player span {
     padding: 5px 15px;

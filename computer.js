@@ -1,7 +1,15 @@
 import {handleComputerMove, restartAudio, animatePieceMovementToTargetIndex,
     animatePieceToCell, arrangePiecesInCell, startHeartbeat,
-    stopHeartbeat, changeDiceColor,sleep,
+    stopHeartbeat, changeDiceColor,sleep, roundoff,
 } from './utils_computer.js'; // Import computer player logic
+
+
+function onGameStart() {
+    const piece = document.querySelector('.piece');
+    pieceSize = roundoff(getComputedStyle(piece).width); // e.g., "26px"
+    // console.log(pieceSize);
+}
+
 
 
 // Game state variables
@@ -14,16 +22,12 @@ const messageButton = document.getElementById('message-button');
 const diceRollingAudio = new Audio('media/sounds/Rolling_1s.mp3'); // Sound for dice rolling
 let pieceSize = 20; // Size of a piece for positioning
 
+const params = new URLSearchParams(window.location.search);
 
-function onGameStart() {
-    const piece = document.querySelector('.piece');
-    pieceSize = roundoff(getComputedStyle(piece).width); // e.g., "26px"
-    // console.log(pieceSize);
-}
+const bots = params.get('bots');
+const difficulty = params.get('difficulty');
 
-function roundoff(size) {
-    return Math.round(parseFloat(size));
-}
+
 
 // Define player colors and their starting/path/home positions
 const players = {
@@ -65,7 +69,25 @@ const players = {
     }
 };
 
-let currentTurn = 'green'; // on game start, next player starts game
+
+const playerColorsInGame = ["yellow", "blue", "green", "red"]; // Sequence of players in the game
+
+console.log("Bots:", bots, "Difficulty:", difficulty);
+
+switch (bots) {
+    case "2":
+        playerColorsInGame.splice(playerColorsInGame.indexOf("red"), 1);
+        break;
+
+    case "1":
+        playerColorsInGame.splice(playerColorsInGame.indexOf("red"), 1);
+        playerColorsInGame.splice(playerColorsInGame.indexOf("blue"), 1);
+        break;
+}
+
+
+
+let currentTurn = "red"; // on game start, next player starts game
 let diceValue = 0;
 let selectedPiece = null;
 let gameStarted = false;
@@ -73,10 +95,10 @@ let gameStarted = false;
 
 // Configuration for computer players
 const computerPlayers = {
-    yellow: true,  // Set to true to make yellow a computer player
+    yellow: false,  // Set to true to make yellow a computer player
     blue: true,    // Set to true to make blue a computer player
     green: true,    // Set to true to make green a computer player
-    red: false
+    red: true
     // red is assumed to be human player
 };
 
@@ -87,7 +109,7 @@ const AI_DIFFICULTY = {
     HARD: 3
 };
 
-const currentDifficulty = AI_DIFFICULTY.EASY;
+const currentDifficulty = AI_DIFFICULTY[difficulty];
 
 // Common path for all players (52 cells)
 // This array defines the sequence of cells for pieces to move on.
@@ -220,7 +242,9 @@ function initializeBoard() {
  * Creates and places player pieces on their respective home circles.
  */
 function createPieces() {
-    for (const playerColor in players) {
+    for (const playerColor of playerColorsInGame) {
+        console.log(`Creating pieces for player: ${playerColor}`);
+        
         const player = players[playerColor];
         for (let i = 0; i < 4; i++) {
             const piece = document.createElement('div');
@@ -417,7 +441,7 @@ async function rollDice() {
     // Check if current player is computer
     if (computerPlayers[currentTurn]) {
         // Computer player logic
-        await handleComputerMove(playablePieces);
+        await handleComputerMove(playablePieces, currentDifficulty);
     } else {
         // Human player logic
         if (playablePieces.length === 1 || 
@@ -653,10 +677,10 @@ async function nextTurn() {
     stopHeartbeat(currentTurn); 
 
     await sleep(500);
-    const playerColors = ['red', 'yellow', 'blue', 'green'];
+    // const playerColorsInGame = ['yellow', 'blue', 'green','red'];
     
-    const currentIndex = playerColors.indexOf(currentTurn);
-    currentTurn = playerColors[(currentIndex + 1) % playerColors.length];
+    const currentIndex = playerColorsInGame.indexOf(currentTurn);
+    currentTurn = playerColorsInGame[(currentIndex + 1) % playerColorsInGame.length];
     currentPlayerDisplay.textContent = currentTurn;
     currentPlayerDisplay.className = ''; // Clear previous color class
     currentPlayerDisplay.classList.add(`${currentTurn}-turn`);

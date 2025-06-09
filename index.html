@@ -12,6 +12,9 @@
 <body data-theme="dark">
     <div class="container">
         <div class="header">
+            <button class="back-button" onclick="showMainMenu()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
             <div class="theme-toggle" onclick="toggleTheme()">
                 <i class="fas fa-sun" id="theme-icon"></i>
             </div>
@@ -64,9 +67,9 @@
         <!-- Computer Setup Page -->
         <div id="computer-setup" class="setup-page">
             <div class="setup-header">
-                <button class="back-button" onclick="showMainMenu()">
+                <!-- <button class="back-button" onclick="showMainMenu()">
                     <i class="fas fa-arrow-left"></i>
-                </button>
+                </button> -->
                 <div class="setup-title">
                     <i class="fas fa-robot"></i> Play with Computer
                 </div>
@@ -125,9 +128,9 @@
         <!-- Friend Setup Page -->
         <div id="friend-setup" class="setup-page">
             <div class="setup-header">
-                <button class="back-button" onclick="showMainMenu()">
+                <!-- <button class="back-button" onclick="showMainMenu()">
                     <i class="fas fa-arrow-left"></i>
-                </button>
+                </button> -->
                 <div class="setup-title">
                     <i class="fas fa-users"></i> Play with Friends
                 </div>
@@ -216,7 +219,7 @@
             
             setTimeout(() => {
                 tooltip.classList.remove('show');
-            }, 3000);
+            }, 8000);
         }
 
         function hideAllTooltips() {

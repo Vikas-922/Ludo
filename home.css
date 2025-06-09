@@ -14,8 +14,10 @@
 }
 
 [data-theme="light"] {
-    --bg-primary: #f7fafa;
-    --bg-secondary: #dadada;
+    /* --bg-primary: #f7fafa;
+    --bg-secondary: #dadada; */
+    --bg-primary: #c8c5e18c;
+    --bg-secondary: #e9d3d3b8;
     --bg-card: #ebfbff;
     --text-primary: #1e293b;
     --text-secondary: #64748b;
@@ -23,7 +25,8 @@
     --accent-hover: #2563eb;
     --success: #10b981;
     --warning: #f59e0b;
-    --border: #e2e8f0;
+    /* --border: #e2e8f0; */
+    --border: #bebebe;
     --shadow: rgba(0, 0, 0, 0.1);
 }
 
@@ -60,7 +63,9 @@ body {
     background: var(--bg-card);
     border: 2px solid var(--border);
     border-radius: 50px;
+    font-size: 1.2rem;
     padding: 8px 15px;
+    margin-right: 1rem;
     cursor: pointer;
     transition: all 0.3s ease;
     color: var(--text-primary);
@@ -232,13 +237,17 @@ body {
 }
 
 .back-button {
-    background: var(--bg-secondary);
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: var(--bg-card);
     border: 2px solid var(--border);
     color: var(--text-primary);
-    padding: 10px 15px;
+    font-size: 1.2rem;
+    padding: 8px 27px;
     border-radius: 10px;
     cursor: pointer;
-    margin-right: 20px;
+    margin-left: 20px;
     transition: all 0.3s ease;
 }
 
@@ -391,8 +400,19 @@ body {
     .setup-page {
         padding: 20px;
     }
+
     .setup-title{
-        font-size: 1.4rem;
+        font-size: 1.6rem;
+    }
+    .back-button {
+        padding: 8px 15px;
+        font-size: 1rem;
+        margin-left: 0;
+    }
+    .theme-toggle {
+        padding: 6px 12px;
+        font-size: 1rem;
+        margin-right: 0;
     }
     .mode-card {
         padding: 20px;

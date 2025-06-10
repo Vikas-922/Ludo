@@ -113,6 +113,10 @@ function selectBestMove(playablePieces) {
  * Evaluates the score of a potential move for each piece
  * considering multiple factors like finishing, killing opponents, safety, and progress.
  */
+const safeSquares = ["cell-14-7","cell-9-3","cell-7-2","cell-3-7",
+        "cell-2-9", "cell-17-3", "cell-9-14", "cell-13-9"
+    ]; 
+
 function evaluateMoveScore(piece, steps) {
     let score = 0;
     const color = piece.dataset.player;
@@ -161,12 +165,17 @@ function evaluateMoveScore(piece, steps) {
     // Priority 4: Avoid being killed
     const safetyScore = evaluateSafety(piece, newIndex, color);
     score += safetyScore;
-    
+
+    // Penalty for moving out of a safe square
+    if (safeSquares.includes(currentIndex) && !safeSquares.includes(targetPosition)) {
+        score -= 300; // Penalty for leaving a safe square
+    }
+
     // Priority 5: Progress towards finish
     const progressScore = evaluateProgress(currentIndex, newIndex, finishIndex);
     score += progressScore;
     
-    // Priority 6: Strategic positioning
+    // Priority 6: relative bonus for reaching safe squares
     const positionScore = evaluatePosition(newIndex, color);
     score += positionScore;
     
@@ -180,16 +189,17 @@ function evaluateMoveScore(piece, steps) {
 /**
  * Evaluates safety of a position (avoid being killed)
  */
-function evaluateSafety(piece, newIndex, color) {
+function evaluateSafety(piece, newIndex, color) {    
+    const currentIndex = parseInt(piece.dataset.pathIndex);
     const pathArray = fullPaths[color];
     const targetPosition = pathArray[newIndex];
+    const currentPosition = pathArray[currentIndex];
     
     if (!targetPosition || newIndex >= 51) {
-        return 50; // Safe in home stretch
+        return 200; // Safe in home stretch
     }
     
     // Check if position is a safe square
-    const safeSquares = ['13', '21', '26', '34', '39', '47']; // Common safe squares
     if (safeSquares.includes(targetPosition)) {
         return 100;
     }
@@ -199,7 +209,7 @@ function evaluateSafety(piece, newIndex, color) {
     const allColors = ['red', 'yellow', 'blue', 'green'];
     
     for (const oppColor of allColors) {
-        if (oppColor === color) continue;
+        if (oppColor === color) continue; // Skip own color
         
         const oppPlayer = players[oppColor];
         if (!oppPlayer) continue;
@@ -213,8 +223,12 @@ function evaluateSafety(piece, newIndex, color) {
             for (let dice = 1; dice <= 6; dice++) {
                 const oppNewIndex = oppIndex + dice;
                 if (oppNewIndex < oppPath.length && oppPath[oppNewIndex] === targetPosition) {
-                    threatScore -= 100; // Penalty for being in danger
+                    threatScore -= 200; // Penalty for being in danger
+                    console.log(`Threat from ${oppColor} at ${targetPosition} with piece ${oppPiece.dataset.pieceId}`);
                     break;
+                }
+                if (oppNewIndex < oppPath.length && oppPath[oppNewIndex] === currentPosition) {
+                    threatScore += 200; // This piece is threatened
                 }
             }
         }

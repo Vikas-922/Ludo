@@ -585,9 +585,9 @@ function checkWinCondition() {
     const currentPlayer = players[currentTurn];
     const finishedPieces = currentPlayer.pieces.filter(p => p.dataset.position === 'finished');
     if (finishedPieces.length === 4) {
-        showMessage(`${currentTurn.toUpperCase()} wins the game! Congratulations!`);
-        dice.style.pointerEvents = 'none'; // Disable dice
-        gameStarted = false; // End game
+        // showMessage(`${currentTurn.toUpperCase()} wins the game! Congratulations!`);
+       declareWinner(currentTurn); 
+       playerColorsInGame.splice(playerColorsInGame.indexOf(currentTurn), 1); 
     }
 }
 
@@ -596,10 +596,16 @@ function checkWinCondition() {
  */
 function resetTurn() {
     deselectPiece(); // Deselect any active piece
+
+    if (!gameStarted) {
+        dice.style.pointerEvents = 'none'; // disable dice for next roll  
+        return; // Exit if game is still ongoing
+    }  
     
     dice.style.pointerEvents = 'auto'; // Enable dice for next roll
+    const hasPlayerWon = winners.includes(currentTurn); // ✅ Replace with your actual win condition
     
-    if (diceValue !== 6 && !isEnteredFinishZone && !iskilledOtherPlayer) { // If not a 6, switch turn
+    if ((diceValue !== 6 && !isEnteredFinishZone && !iskilledOtherPlayer) || hasPlayerWon) {
         resetSpecialFlags(); 
         nextTurn();
     } else {
@@ -608,6 +614,8 @@ function resetTurn() {
     diceValue = 0; // Reset dice value
     resetSpecialFlags(); 
 }
+
+
 
 /**
  * Deselects the currently selected piece.
@@ -620,6 +628,8 @@ function deselectPiece() {
     // Remove highlighting from all pieces
     document.querySelectorAll('.piece.selected').forEach(p => p.classList.remove('selected'));
 }
+
+
 
 /**
  * Switches to the next player's turn.
@@ -656,4 +666,53 @@ window.onload = function() {
 
 
 ///////////====================================================================
+
+
+function gameEnds() {
+    // Disable all interactions
+    dice.style.pointerEvents = 'none';
+    document.querySelectorAll('.piece').forEach(piece => {
+        piece.removeEventListener('click', handlePieceClick);
+    });
+    gameStarted = false;
+    playerColorsInGame.splice(0, playerColorsInGame.length); // Clear player colors in game
+    showMessage("Game Over! Thanks for playing!");
+}
+
+// Array to keep track of winners in order
+const winners = [];
+
+// Call this function when a player wins
+function declareWinner(playerColor) {
+    if (winners.includes(playerColor)) return; // Prevent duplicate
+
+    winners.push(playerColor);
+
+    let place = winners.length; // 1st, 2nd, 3rd, etc.
+    place = place === 1 ? "1st" : place === 2 ? "2nd" : "3rd";
+    const badgeImageSrc = `./media/${place}.png`;
+
+    const homeArea = document.querySelector(`.home-area.home-${playerColor}`);
+    const badgeDiv = homeArea.querySelector('.winner-badge');
+    const img = badgeDiv.querySelector('img');
+
+    img.src = badgeImageSrc;
+    img.alt = `${place} Place`;
+    badgeDiv.style.display = 'block';
+
+    // if (winners.length === playerColorsInGame.length || currentTurn === "yellow") {
+    if (winners.length === 3) {
+        // If 3 players have finished or it's a human player finished
+        gameEnds(); // All players have finished
+        return;
+    }
+}
+
+
+
+
+
+
+
+
 export { pieceSize };

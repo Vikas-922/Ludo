@@ -3,6 +3,18 @@ import {handleComputerMove, restartAudio, animatePieceMovementToTargetIndex,
     stopHeartbeat, changeDiceColor,sleep, roundoff,
 } from './utils_computer.js'; // Import computer player logic
 
+import {
+    initializeAllPieceEmotions,
+    updateAllPieceReactions,
+    updateReactionsLoop,
+    onPieceKill,
+    onRollSix,
+    onPieceCantMove,
+    triggerTemporaryReaction,
+    addReactionStyles,
+    updateCurrentTurn,
+    initializeVariables
+} from './ludo_reactions.js';
 
 function onGameStart() {
     const piece = document.querySelector('.piece');
@@ -86,7 +98,7 @@ switch (bots) {
 }
 
 
-
+let reactionsEnabled = false;
 let currentTurn = "red"; // on game start, next player starts game
 let diceValue = 0;
 let selectedPiece = null;
@@ -166,6 +178,20 @@ function initializeFullPaths() {
 }
 
 initializeFullPaths();
+
+let firstEnableDone = false;
+document.getElementById('reactionToggleCheckbox').addEventListener('change', function () {
+  reactionsEnabled = this.checked;
+  console.log('Reactions Enabled:', reactionsEnabled);
+    document.querySelectorAll('.piece-emoji').forEach(emoji => {
+        emoji.style.display = reactionsEnabled ? 'absolute' : 'none';
+    });
+  if (reactionsEnabled && !firstEnableDone) {
+    initializeAllPieceEmotions(); // Run only once
+    firstEnableDone = true;
+  }
+});
+
 
 
 /**
@@ -262,6 +288,12 @@ function createPieces() {
                 console.error(`Home circle ${player.homeCircles[i]} not found.`);
             }
             player.pieces.push(piece);
+
+            // Add emoji span
+            const emojiSpan = document.createElement('span');
+            emojiSpan.classList.add('piece-emoji');
+            emojiSpan.textContent = ''; // Initially empty
+            piece.appendChild(emojiSpan);
 
             // Add click listener to pieces
             piece.addEventListener('click', handlePieceClick);
@@ -395,12 +427,6 @@ async function rollDice() {
         return;
     }
 
-    // let initialMessage = `${currentTurn.toUpperCase()} rolled a ${diceValue}!`;
-    // showMessage(initialMessage + '<br>✨ Getting Ludo Insight... ✨', true); // Show loading
-
-    // const ludoInsight = await fetchLudoInsight(currentTurn, diceValue);
-    // showMessage(`${initialMessage}<br>${ludoInsight}`); // Update with insight
-
     // Determine playable pieces
     const currentPlayer = players[currentTurn];
     let playablePieces = [];
@@ -410,6 +436,9 @@ async function rollDice() {
     if (diceValue === 6 && piecesInHome.length > 0) {
         // If 6 is rolled, any piece in home can come out
         playablePieces.push(...piecesInHome);
+
+        const currentPlayerPieces = players[currentTurn].pieces;
+        if (reactionsEnabled) onRollSix(currentPlayerPieces);
     }
     console.log(`dice value = ${diceValue} , currentplayer = ${currentPlayer.color}`);
 
@@ -429,12 +458,22 @@ async function rollDice() {
 
     // If no playable pieces, end turn
     if (playablePieces.length === 0) {
+        // playablePieces.forEach(piece => {
+        //     onPieceCantMove(piece);
+        // });
+
         dice.style.pointerEvents = 'auto';
         await nextTurn();
     } else {
         // Highlight playable pieces
         playablePieces.forEach(piece => piece.classList.add('selected'));
     }
+
+    // playablePieces.forEach(piece => {
+    //     const emojis = ['😎', '😃', '😡', '😁', '🎉'];
+    //     const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+    //     showPieceReaction(piece, randomEmoji);
+    // });
 
 
     // Check if current player is computer
@@ -452,6 +491,16 @@ async function rollDice() {
             playablePieces[0].classList.remove('selected');
         }
     }
+}
+
+// function showPieceReaction(piece, emoji) {
+//     const emojiSpan = piece.querySelector('.piece-emoji');
+//     if (emojiSpan) {
+//         emojiSpan.textContent = emoji;
+//     }
+// }
+function showPieceReaction(piece, emoji) {
+    if (reactionsEnabled) triggerTemporaryReaction(piece, 'CONFIDENT', 2000);   
 }
 
 
@@ -604,6 +653,8 @@ async function checkAndKillOpponent(movedPiece) {
             const pieceNumber = parseInt(pieceId.split('-')[1]);
             iskilledOtherPlayer = true; // Set flag for killed piece
 
+            if (reactionsEnabled) onPieceKill(movedPiece, piece); //reaction for killing piece
+
             // Move piece back to its home circle
             const homeCircle = document.getElementById(opponentPlayer.homeCircles[pieceNumber - 1]);
             if (homeCircle) {
@@ -712,6 +763,10 @@ async function nextTurn() {
     startHeartbeat(currentTurn); 
     changeDiceColor(currentTurn);
 
+    if (reactionsEnabled) {
+        updateAllPieceReactions(); //to update reactions when turn changes
+        updateCurrentTurn(currentTurn); // Update current turn in reactions.js
+    }
     // console.log(` Inside nextTurn ,,, It's ${currentTurn.toUpperCase()}'s turn!  ${dice.style.pointerEvents === "none"}`, );
     
     // Auto-roll for computer players 
@@ -731,6 +786,12 @@ dice.addEventListener('click', diceRollAnimation);
 window.onload = async function() {    
     initializeBoard();
     createPieces();
+
+    initializeVariables(fullPaths); // Initialize game variables
+    addReactionStyles();
+    // initializeAllPieceEmotions();
+    // updateReactionsLoop(); // Start the reaction update loop
+
     onGameStart(); 
     await nextTurn(); // Set initial player display
     gameStarted = true;

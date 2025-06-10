@@ -59,6 +59,13 @@ Game Container
     box-sizing: border-box;
 }
 
+.header {
+    display: flex;
+    justify-content: space-around;
+    width : 100%;
+    margin-bottom: 20px;
+
+}
 /* ========================
 Ludo Board Container
 ======================== */
@@ -375,6 +382,19 @@ Path Cell Styles
 /* ========================
 Game Piece Styling
 ======================== */
+.piece-emoji {
+    position: absolute;
+    top: -15px;  /* Or adjust as needed */
+    right: -12px;
+    font-size: 1.4rem;
+    background-color: rgba(255, 255, 255, 0);
+    border-radius: 50%;
+    padding: 2px;
+    box-shadow: 0 2px 4px rgba(159, 159, 159, 0);
+    pointer-events: none;
+    z-index: 3;
+    transition: all 0.3s ease;
+}
 .piece {
     width: 35px;
     height: 35px;
@@ -503,11 +523,12 @@ Current Player Display
 .current-player {
     font-size: 1.8em;
     font-weight: bold;
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
     text-align: center;
     color: #000000;
 }
 .current-player span {
+    min-width: 90px;
     padding: 5px 15px;
     border-radius: 10px;
     color: white;
@@ -562,6 +583,72 @@ Message Box (Pop-up)
     background-color: #45a049;
 }
 
+
+/* switch toggle for reactions */
+
+#reaction-toggle {
+  /* position: fixed; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.toggle-label {
+  font-size: 1.2em;
+  font-weight: 700;
+  color: #161616;
+  margin-right: 10px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 53px;
+  height: 30px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Slider background */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  border: 2px solid #888;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+/* Circle inside the slider */
+.slider::before {
+  position: absolute;
+  content: "";
+  height: 23px; 
+  aspect-ratio: 1/1;
+  left: 3px; 
+  bottom: 2px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #4CAF50;
+}
+
+input:checked + .slider::before {
+  transform: translateX(22px);
+}
+
+
 /* ========================
 Responsive Adjustments
 ======================== */
@@ -609,6 +696,20 @@ Responsive Adjustments
         --dice-size: 2rem; 
         --translate-z: 1rem; 
     }
+    .switch {        
+        width: 48px;
+        height: 26px;
+    }
+    .slider::before {
+        height: 19px; 
+        aspect-ratio: 1/1;
+        left: 3px; 
+        bottom: 2px;
+    }
+    input:checked + .slider::before {
+        transform: translateX(20px);
+    }
+
     .ludo-board {
         max-width: 385px;
         margin: 10px;
@@ -622,19 +723,29 @@ Responsive Adjustments
     body {
         padding: 10px 5px;
     }
-    /* .dice {
-        width: 50px;
-        height: 50px;
-        font-size: 2em;
-    } */
+    .current-player span{
+        min-width: 60px;
+
+        margin-left: 5px;
+        padding: 3px 10px;
+    }
     .current-player {
-        font-size: 0.8em;
-        margin-bottom: 0.6rem;
+        font-size: 0.9em;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* margin-bottom: 0.6rem; */
+    }
+    .toggle-label{
+        font-size: 0.9rem;
     }
     .piece {
         width: 21px;
         height: 21px;
         font-size: 0.8em;
+    }
+    .piece-emoji{
+        font-size: 1.1rem;
     }
     .home-circle {
         width: 25px;

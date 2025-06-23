@@ -11,7 +11,6 @@ const dice = document.getElementById('dice'); // Assuming dice is a global eleme
  */
 async function handleComputerMove(playablePieces,currentDifficulty) {
     if (playablePieces.length === 0) {
-        // console.log("No playable pieces available for computer.");
         return;
     }
 
@@ -68,7 +67,7 @@ function selectMediumMove(playablePieces) {
     
     // Priority 2: Finish pieces that are close to home
     const finishablePieces = playablePieces.filter(piece => {
-        const pathIndex = parseInt(piece.dataset.pathIndex);
+        const pathIndex = stringToInteger(piece.dataset.pathIndex);
         const color = piece.dataset.player;
         const pathArray = fullPaths[color];
         const finishIndex = pathArray.length - 1;
@@ -98,14 +97,16 @@ function selectBestMove(playablePieces) {
     
     for (const piece of playablePieces) {
         const score = evaluateMoveScore(piece, diceValue);
-        console.log(" @@@ score ", piece.dataset.pieceId, ":", score);
+        // console.log(" @@@ score ", piece.dataset.pieceId, ":", score);
 
         if (score > bestScore) {
             bestScore = score;
             bestMove = piece;
         }
     }
-    
+    // console.log("🤖🤖Score history:", scorehistory);
+    scorehistory = {}; // Clear after evaluation
+
     return bestMove || playablePieces[0];
 }
 
@@ -114,14 +115,29 @@ function selectBestMove(playablePieces) {
  * considering multiple factors like finishing, killing opponents, safety, and progress.
  */
 const safeSquares = ["cell-14-7","cell-9-3","cell-7-2","cell-3-7",
-        "cell-2-9", "cell-17-3", "cell-9-14", "cell-13-9"
+        "cell-2-9", "cell-7-13", "cell-9-14", "cell-13-9"
     ]; 
 
+function isPieceInSafeSquare(piece) {    
+    const pathcell = piece.parentElement.id; // Assuming piece is inside a cell element
+    const currentPosition = pathcell; // Get the current position of the piece
+    // console.log("Checking if piece is in a safe square:", piece, "at position:", currentPosition);
+    return safeSquares.includes(currentPosition);
+}
+
+function stringToInteger(value) {
+    const rawInteger = parseInt(value);
+    const integer = Number.isNaN(rawInteger) ? -1 : rawInteger; // Handle NaN case
+    return integer;
+}
+
+let scorehistory = {}; /// i want an object to store the score history of each piece
 function evaluateMoveScore(piece, steps) {
+    scorehistory[piece.dataset.pieceId] = {};
     let score = 0;
     const color = piece.dataset.player;
     const pathArray = fullPaths[color];
-    const currentIndex = parseInt(piece.dataset.pathIndex) || -1;
+    const currentIndex = stringToInteger(piece.dataset.pathIndex);
     const newIndex = currentIndex + steps;
     const finishIndex = pathArray.length - 1;
     
@@ -135,11 +151,11 @@ function evaluateMoveScore(piece, steps) {
         score += 800;
         
         // Bonus if we can kill someone from start position
-        const startPosition = pathArray[0];
-        const opponentAtStart = getOpponentPiecesAtPosition(startPosition, color);
-        if (opponentAtStart.length > 0) {
-            score += 200;
-        }
+        // const startPosition = pathArray[0];
+        // const opponentAtStart = getOpponentPiecesAtPosition(startPosition, color);
+        // if (opponentAtStart.length > 0) {
+        //     score += 200;
+        // }
         return score;
     }
     
@@ -153,55 +169,70 @@ function evaluateMoveScore(piece, steps) {
     if (targetPosition && newIndex < 51) { // Only in common path
         const opponentsAtTarget = getOpponentPiecesAtPosition(targetPosition, color);
         if (opponentsAtTarget.length > 0) {
-            score += 600;
+            score += 660;
             // Bonus for killing pieces closer to finish
             opponentsAtTarget.forEach(opponent => {
-                const oppIndex = parseInt(opponent.dataset.pathIndex);
+                const oppIndex = stringToInteger(opponent.dataset.pathIndex);
                 score += oppIndex * 2; // More points for killing advanced pieces
             });
+
+            scorehistory[piece.dataset.pieceId]["killing opponent pieces"] = score; // add to score history
         }
     }
     
     // Priority 4: Avoid being killed
     const safetyScore = evaluateSafety(piece, newIndex, color);
     score += safetyScore;
+    scorehistory[piece.dataset.pieceId]["safetyScore"] = safetyScore; // add to score history
 
     // Penalty for moving out of a safe square
-    if (safeSquares.includes(currentIndex) && !safeSquares.includes(targetPosition)) {
-        score -= 300; // Penalty for leaving a safe square
+    // const currentPosition = pathArray[currentIndex];
+    if (isPieceInSafeSquare(piece) && !safeSquares.includes(targetPosition)) {
+        score -= 320; // Penalty for leaving a safe square
+        scorehistory[piece.dataset.pieceId]["leaving safe square"] = -320; // add to score history
     }
+
 
     // Priority 5: Progress towards finish
     const progressScore = evaluateProgress(currentIndex, newIndex, finishIndex);
     score += progressScore;
-    
+    scorehistory[piece.dataset.pieceId]["progressScore"] = progressScore; // add to score history
+
     // Priority 6: relative bonus for reaching safe squares
     const positionScore = evaluatePosition(newIndex, color);
     score += positionScore;
-    
+    scorehistory[piece.dataset.pieceId]["score for reaching safe squares"] = positionScore; // add to score history
+
     // Priority 7: Blocking opponents
     // const blockingScore = evaluateBlocking(targetPosition, color);
     // score += blockingScore;
-    
+     
     return score;
 }
 
 /**
  * Evaluates safety of a position (avoid being killed)
  */
-function evaluateSafety(piece, newIndex, color) {    
-    const currentIndex = parseInt(piece.dataset.pathIndex);
+function evaluateSafety(piece, newIndex, color) {
+    const safetyScore = {};
+    const currentIndex = stringToInteger(piece.dataset.pathIndex);
     const pathArray = fullPaths[color];
     const targetPosition = pathArray[newIndex];
     const currentPosition = pathArray[currentIndex];
     
-    if (!targetPosition || newIndex >= 51) {
+    if (!targetPosition || newIndex >= 51) {        
+        safetyScore["target, safe in home"] = 200;
+        safetyScore["targetposition"] = targetPosition;
+        scorehistory[piece.dataset.pieceId]["evaluate safety"] = safetyScore; // add to score history
         return 200; // Safe in home stretch
     }
     
     // Check if position is a safe square
     if (safeSquares.includes(targetPosition)) {
-        return 100;
+        safetyScore["targetposition"] = targetPosition;
+        safetyScore["target, safe square"] = 200;
+        scorehistory[piece.dataset.pieceId]["evaluate safety"] = safetyScore; // add to score history
+        return 200;
     }
     
     // Check threat from opponents
@@ -213,9 +244,10 @@ function evaluateSafety(piece, newIndex, color) {
         
         const oppPlayer = players[oppColor];
         if (!oppPlayer) continue;
-        
+        // console.log("👲",oppPlayer.pieces);
+
         for (const oppPiece of oppPlayer.pieces) {
-            const oppIndex = parseInt(oppPiece.dataset.pathIndex);
+            const oppIndex = stringToInteger(oppPiece.dataset.pathIndex);
             if (isNaN(oppIndex) || oppIndex < 0) continue;
             
             // Check if opponent can reach our target position in 1-6 moves
@@ -223,17 +255,18 @@ function evaluateSafety(piece, newIndex, color) {
             for (let dice = 1; dice <= 6; dice++) {
                 const oppNewIndex = oppIndex + dice;
                 if (oppNewIndex < oppPath.length && oppPath[oppNewIndex] === targetPosition) {
-                    threatScore -= 200; // Penalty for being in danger
-                    console.log(`Threat from ${oppColor} at ${targetPosition} with piece ${oppPiece.dataset.pieceId}`);
+                    threatScore -= 300; // Penalty for being in danger at target position
+                    safetyScore["target, threat from " + oppColor + " at " + targetPosition] = -300;
                     break;
                 }
-                if (oppNewIndex < oppPath.length && oppPath[oppNewIndex] === currentPosition) {
-                    threatScore += 200; // This piece is threatened
+                if (oppNewIndex < oppPath.length && oppPath[oppNewIndex] === currentPosition && !isPieceInSafeSquare(piece)) {
+                    threatScore += 340; // This piece is threatened at current position
+                    safetyScore["current, threat from " + oppColor + " at " + currentPosition] = 340;
                 }
             }
         }
     }
-    
+    scorehistory[piece.dataset.pieceId]["evaluate safety"] = safetyScore; // add to score history
     return threatScore;
 }
 
@@ -249,13 +282,7 @@ function evaluateProgress(currentIndex, newIndex, finishIndex) {
  * Evaluates strategic position value
  */
 function evaluatePosition(index, color) {
-    // Bonus for reaching certain strategic positions
-    // const strategicPositions = {
-    //     13: 20,  // First safe square
-    //     26: 30,  // Middle safe square
-    //     39: 40,  // Late safe square
-    //     47: 50   // Final safe square before home stretch
-    // };
+    // Bonus for reaching certain strategic positions    
      const strategicPositions = {
         "red": {
             "cell-3-7": 20,  
@@ -318,7 +345,7 @@ function evaluateBlocking(targetPosition, color) {
         if (!oppPlayer) continue;
         
         for (const oppPiece of oppPlayer.pieces) {
-            const oppIndex = parseInt(oppPiece.dataset.pathIndex);
+            const oppIndex = stringToInteger(oppPiece.dataset.pathIndex);
             if (isNaN(oppIndex) || oppIndex < 0) continue;
             
             const oppPath = fullPaths[oppColor];
@@ -343,7 +370,7 @@ function findKillingMoves(playablePieces) {
     
     for (const piece of playablePieces) {
         const color = piece.dataset.player;
-        const currentIndex = parseInt(piece.dataset.pathIndex) || -1;
+        const currentIndex = stringToInteger(piece.dataset.pathIndex);
         const newIndex = currentIndex + diceValue;
         const pathArray = fullPaths[color];
         
@@ -386,7 +413,7 @@ function selectFurthestPiece(playablePieces) {
     let maxIndex = -1;
     
     for (const piece of playablePieces) {
-        const index = parseInt(piece.dataset.pathIndex) || -1;
+        const index = stringToInteger(piece.dataset.pathIndex);
         if (index > maxIndex) {
             maxIndex = index;
             furthestPiece = piece;
@@ -447,9 +474,6 @@ function arrangePiecesInCell(cell) {
   const pieces = cell.querySelectorAll('.piece'); // Make sure each piece has class="piece"
   const total = pieces.length;
   const radius = 8; // You can tweak this to control spacing
-
-//   console.log('total', total);
-//   console.log("piecesize", pieceSize);
 
   if (total === 1) {
     pieces[0].style.left = 'unset';

@@ -194,7 +194,7 @@ function checkForThreats(piece, playerColor, pathIndex) {
             }
         }
     });
-    console.log("playerColor",playerColor,"threats:", threats);
+    // console.log("playerColor",playerColor,"threats:", threats);
     
     return threats;
 }

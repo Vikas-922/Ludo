@@ -182,7 +182,7 @@ initializeFullPaths();
 let firstEnableDone = false;
 document.getElementById('reactionToggleCheckbox').addEventListener('change', function () {
   reactionsEnabled = this.checked;
-  console.log('Reactions Enabled:', reactionsEnabled);
+//   console.log('Reactions Enabled:', reactionsEnabled);
     document.querySelectorAll('.piece-emoji').forEach(emoji => {
         emoji.style.display = reactionsEnabled ? 'absolute' : 'none';
     });
@@ -423,7 +423,7 @@ async function diceRollAnimation() {
 async function rollDice() {
     if (selectedPiece) {
         showMessage("Please move your selected piece or deselect it.");
-        console.log("Please move your selected piece or deselect it.");        
+        // console.log("Please move your selected piece or deselect it.");        
         return;
     }
 
@@ -440,7 +440,7 @@ async function rollDice() {
         const currentPlayerPieces = players[currentTurn].pieces;
         if (reactionsEnabled) onRollSix(currentPlayerPieces);
     }
-    console.log(`dice value = ${diceValue} , currentplayer = ${currentPlayer.color}`);
+    // console.log(`dice value = ${diceValue} , currentplayer = ${currentPlayer.color}`);
 
     // Check pieces on the path
     const piecesOnPath = currentPlayer.pieces.filter(p => p.dataset.position.includes('path'));

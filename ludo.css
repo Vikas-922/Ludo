@@ -50,12 +50,12 @@ Game Container
     flex-direction: column;
     align-items: center;
     /* background-color: var(--game-container-color); */
-    background-color: #8483ff4d;
+    /* background-color: #8483ff4d; */
     border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    padding: 30px;
+    /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); */
+    /* padding: 30px; */
     width: 100%;
-    max-width: 700px; /* Max width for large screens */
+    max-width: 515px; /* Max width for large screens */
     box-sizing: border-box;
 }
 
@@ -63,9 +63,10 @@ Game Container
     display: flex;
     justify-content: space-around;
     width : 100%;
-    margin-bottom: 20px;
-
+    margin: 20px 0;
 }
+
+
 /* ========================
 Ludo Board Container
 ======================== */
@@ -80,7 +81,8 @@ Ludo Board Container
     border: 2px solid var(--border-main);
     background-color: var(--board-bg);
     border-radius: 10px;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+    /* box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);     */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     overflow: hidden; /* Ensure pieces stay within bounds */
     position: relative;
 }
@@ -521,7 +523,7 @@ Dice & Controls Area
 Current Player Display
 ======================== */
 .current-player {
-    font-size: 1.8em;
+    font-size: 1.2rem;
     font-weight: bold;
     /* margin-bottom: 20px; */
     text-align: center;
@@ -660,20 +662,25 @@ Responsive Adjustments
     .ludo-board {
         max-width: 500px;
     }
-    /* .dice {
-        width: 60px;
-        height: 60px;
-        font-size: 2.5em;
-    } */
-    /* #diceImg{
-        width: 78%;
-        height: 78%;
-        transition: transform 0.2s ease-in-out;
-        transform-origin: center;
-    } */
+    
     .current-player {
-        font-size: 1.4em;
+        font-size: 1.2em;
     }
+
+    .switch {        
+        width: 48px;
+        height: 26px;
+    }
+    .slider::before {
+        height: 19px; 
+        aspect-ratio: 1/1;
+        left: 3px; 
+        bottom: 2px;
+    }
+    input:checked + .slider::before {
+        transform: translateX(20px);
+    }
+    
     .piece {
         width: 26px;
         height: 26px;
@@ -695,25 +702,17 @@ Responsive Adjustments
     :root{
         --dice-size: 2rem; 
         --translate-z: 1rem; 
-    }
-    .switch {        
-        width: 48px;
-        height: 26px;
-    }
-    .slider::before {
-        height: 19px; 
-        aspect-ratio: 1/1;
-        left: 3px; 
-        bottom: 2px;
-    }
-    input:checked + .slider::before {
-        transform: translateX(20px);
-    }
+    }   
 
     .ludo-board {
         max-width: 385px;
         margin: 10px;
     }
+
+    .header{
+        margin: 2px 0;
+    }
+
     .game-container {
         padding: 15px 0px;
     }
@@ -761,6 +760,7 @@ Responsive Adjustments
     .message-box{
         font-size: 1.2rem;
     }
+    
 
     .message-box button {
         padding: 8px 15px;

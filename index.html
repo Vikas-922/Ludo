@@ -48,10 +48,10 @@
                     <button class="mode-button">Start Game</button>
                 </div>
 
-                <div class="mode-card disabled">
-                    <div class="coming-soon">
+                <div class="mode-card" onclick="redirectTo()">
+                    <!-- <div class="coming-soon">
                         <i class="fas fa-clock"></i> Coming Soon
-                    </div>
+                    </div> -->
                     <div class="mode-icon">
                         <i class="fas fa-globe"></i>
                     </div>
@@ -59,7 +59,7 @@
                     <div class="mode-description">
                         Join friends from anywhere in the world. Create or join rooms with unique room IDs.
                     </div>
-                    <button class="mode-button disabled">Coming Soon</button>
+                    <button class="mode-button">Start Game</button>
                 </div>
             </div>
         </div>
@@ -173,6 +173,10 @@
                 body.setAttribute('data-theme', 'dark');
                 themeIcon.className = 'fas fa-sun';
             }
+        }
+
+        function redirectTo(){
+            window.location.href = "https://online-ludo.onrender.com/";
         }
 
         function showSetup(mode) {

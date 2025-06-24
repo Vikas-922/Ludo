@@ -351,6 +351,7 @@ async function diceRollAnimation() {
 //
   nextTimeout = setTimeout(async () => {
         diceValue = value;
+        if (diceValue===6) extraChance++;
         await rollDice();
         isRolling = false;
         rollingTimeout = null;
@@ -500,6 +501,7 @@ async function movePiece(piece, steps) {
     }
     
     isEnteredFinishZone = true;
+    extraChance++;
     // finishCell.appendChild(piece);
     await animatePieceMovementToTargetIndex(piece, pathArray, currentIndex, newIndex);
 
@@ -558,6 +560,7 @@ async function checkAndKillOpponent(movedPiece) {
             const pieceId = piece.dataset.pieceId;
             const pieceNumber = parseInt(pieceId.split('-')[1]);
             iskilledOtherPlayer = true; // Set flag for killed piece
+            extraChance++;           // Extra extraChance for killing
 
             // Move piece back to its home circle
             const homeCircle = document.getElementById(opponentPlayer.homeCircles[pieceNumber - 1]);
@@ -594,6 +597,7 @@ function checkWinCondition() {
 /**
  * Resets the turn after a piece has been moved or no valid moves exist.
  */
+let extraChance = 0;
 function resetTurn() {
     deselectPiece(); // Deselect any active piece
 
@@ -605,11 +609,13 @@ function resetTurn() {
     dice.style.pointerEvents = 'auto'; // Enable dice for next roll
     const hasPlayerWon = winners.includes(currentTurn); // ✅ Replace with your actual win condition
     
-    if ((diceValue !== 6 && !isEnteredFinishZone && !iskilledOtherPlayer) || hasPlayerWon) {
+    // if ((diceValue !== 6 && !isEnteredFinishZone && !iskilledOtherPlayer) || hasPlayerWon) {
+    if (extraChance<=0 || hasPlayerWon) {
         resetSpecialFlags(); 
         nextTurn();
     } else {
         // showMessage(`${currentTurn.toUpperCase()} rolled a 6! Roll again!`);
+        extraChance--;
     }
     diceValue = 0; // Reset dice value
     resetSpecialFlags(); 
@@ -639,6 +645,7 @@ function deselectPiece() {
  * Switches to the next player's turn.
  */
 function nextTurn() {
+    extraChance=0;
     stopHeartbeat(currentTurn);    
     // const playerColorsInGame = ['yellow', 'blue', 'green','red'];
     

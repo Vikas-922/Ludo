@@ -238,8 +238,8 @@ Home Areas (4 Corners)
 
 /* Home Circles */
 .home-circle {
-    width: 40px;
-    height: 40px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     border: 2px dashed #888;
     display: flex;
@@ -398,8 +398,8 @@ Game Piece Styling
     transition: all 0.3s ease;
 }
 .piece {
-    width: 35px;
-    height: 35px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     border: 2px solid #333;
     position: absolute;
@@ -407,7 +407,7 @@ Game Piece Styling
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.2em;
+    font-size: 1.1rem;
     color: white;
     font-weight: bold;
     box-shadow: 0 4px 8px var(--piece-shadow);

@@ -616,6 +616,10 @@ function resetTurn() {
 }
 
 
+function resetSpecialFlags() {
+    isEnteredFinishZone = false; // Reset finish zone flag
+    iskilledOtherPlayer = false; // Reset killed opponent flag
+}
 
 /**
  * Deselects the currently selected piece.

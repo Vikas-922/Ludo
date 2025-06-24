@@ -362,7 +362,7 @@ async function diceRollAnimation() {
 async function rollDice() {
     if (selectedPiece) {
         showMessage("Please move your selected piece or deselect it.");
-        console.log("Please move your selected piece or deselect it.");        
+        // console.log("Please move your selected piece or deselect it.");        
         return;
     }
 
@@ -382,7 +382,7 @@ async function rollDice() {
         // If 6 is rolled, any piece in home can come out
         playablePieces.push(...piecesInHome);
     }
-    console.log(`dice value: ${diceValue} /// current player ${currentTurn} `);
+    // console.log(`dice value: ${diceValue} /// current player ${currentTurn} `);
     
     // Check pieces on the path
     const piecesOnPath = currentPlayer.pieces.filter(p => p.dataset.position.includes('path'));
